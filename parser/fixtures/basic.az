@@ -1,0 +1,25 @@
+server "tag_kibana_server" {
+  addresses = [
+    "10.0.0.1"
+  ]
+}
+
+variable "elastic_search_role" {
+  default = "elasticsearch"
+}
+
+variable "output_file" {
+  default = "azad.txt"
+}
+
+host "tag_kibana_server" {
+  roles = [
+    "${var.elastic_search_role}"
+  ]
+}
+
+role "elasticsearch" {
+  task "bash" "restart-nginx" {
+    command = "echo \"ran via azad\" >> ${ var.output_file }"
+  }
+}
