@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+coverage=false
+
+while getopts "c" opt; do
+  case "$opt" in
+    c)
+      coverage=true
+      ;;
+  esac
+done
+
+packages=(azad cli conn core logger parser runner schema)
+coveragepath=./tmp/coverage
+testresults=./tmp/test_results
+mkdir -p $coveragepath
+mkdir -p $testresults
+
+exitCode=0
+for package in ${packages[@]}; do
+  mkdir -p ${testresults}/${package}
+  go test -v -cover -coverprofile=${coveragepath}/${package}.coverage -covermode=set ./${package} > ${testresults}/${package}/${package}.out
+  retVal=$?
+  cat ${testresults}/${package}/${package}.out | go-junit-report > ${testresults}/${package}/results.xml
+  if [ $retVal -ne 0 ]; then
+    echo "fail github.com/pythonandchips/azad/${package}"
+    exitCode=1
+  else
+    echo "ok github.com/pythonandchips/azad/${package}"
+  fi
+done
+
+if $coverage ; then
+  for package in ${packages[@]}; do
+    ./tmp/cc-test-reporter format-coverage -t gocov -p github.com/pythonandchips/azad -o ${coveragepath}/codeclimate.${package}.json ${coveragepath}/${package}.coverage
+  done
+
+  ./tmp/cc-test-reporter sum-coverage ${coveragepath}/codeclimate.*.json -p ${#packages[@]} -o ${coveragepath}/codeclimate.total.json
+  ./tmp/cc-test-reporter upload-coverage -i ${coveragepath}/codeclimate.total.json
+fi
+
+exit $exitCode

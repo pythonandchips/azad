@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+testreporterpath=./tmp/cc-test-reporter
+
+if [ ! -f ${testreporterpath} ]; then
+  mkdir -p ./tmp/
+  curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ${testreporterpath}
+  chmod +x ${testreporterpath}
+fi

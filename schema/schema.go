@@ -21,3 +21,7 @@ type Field struct {
 	Type     string
 	Required bool
 }
+
+func BuildSchema() Schema {
+	return Schema{}
+}
