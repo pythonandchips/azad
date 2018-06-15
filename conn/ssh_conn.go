@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -9,11 +10,6 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"golang.org/x/crypto/ssh"
 )
-
-// SSHConn manage connections
-type SSHConn struct {
-	client *ssh.Client
-}
 
 func (sshConn *SSHConn) ConnectTo(ip string) error {
 	home, _ := homedir.Dir()
@@ -40,40 +36,61 @@ func (sshConn *SSHConn) ConnectTo(ip string) error {
 	if err != nil {
 		return fmt.Errorf("Unable to dial %s: %s", ip, err)
 	}
-	sshConn.client = conn
+	sshConn.client = sshClientWrapper{conn}
 	return nil
 }
 
-func (sshConn *SSHConn) Run(command Command) error {
-	ref := time.Now().UnixNano()
-	commands := []string{
-		fmt.Sprintf("echo '%s' > /tmp/azad.%d && chmod +x /tmp/azad.%d",
-			command.generateFile(), ref, ref),
+var now = func() int64 {
+	return time.Now().UnixNano()
+}
+
+// Run a command against the sshConn host
+//
+// Returns the result of stdout and stderr in the command response
+// Returns an error if an ssh session cannot be created or
+// if the command has a non-zero exit code
+func (sshConn *SSHConn) Run(command Command) (CommandResponse, error) {
+	ref := now()
+	writeCommandFile := fmt.Sprintf("echo '%s' > /tmp/azad.%d && chmod +x /tmp/azad.%d", command.generateFile(), ref, ref)
+	if _, err := sshConn.runOnClient(writeCommandFile); err != nil {
+		return CommandResponse{}, err
 	}
+	var runCommand string
 	if command.User != "" {
-		commands = append(commands, fmt.Sprintf("sudo su - %s -c '/tmp/azad.%d'",
-			command.User, ref))
+		runCommand = fmt.Sprintf("sudo su - %s -c '/tmp/azad.%d'", command.User, ref)
 	} else {
-		commands = append(commands, fmt.Sprintf("/tmp/azad.%d", ref))
+		runCommand = fmt.Sprintf("/tmp/azad.%d", ref)
 	}
-	commands = append(commands, fmt.Sprintf("rm /tmp/azad.%d", ref))
-	return sshConn.runOnClient(commands)
+	commandResposne, err := sshConn.runOnClient(runCommand)
+	if err != nil {
+		return commandResposne, err
+	}
+	cleanUpCommand := fmt.Sprintf("rm /tmp/azad.%d", ref)
+	_, err = sshConn.runOnClient(cleanUpCommand)
+	return commandResposne, err
 }
 
-func (conn SSHConn) runOnClient(commands []string) error {
-	for _, c := range commands {
-		session, err := conn.client.NewSession()
-		defer session.Close()
-		if err != nil {
-			return err
-		}
-		if err := session.Run(c); err != nil {
-			return err
-		}
+func (sshConn SSHConn) runOnClient(command string) (CommandResponse, error) {
+	commandResposne := CommandResponse{
+		stdout: bytes.NewBuffer([]byte{}),
+		stderr: bytes.NewBuffer([]byte{}),
 	}
-	return nil
+	session, err := sshConn.client.NewSession()
+	if err != nil {
+		return commandResposne, err
+	}
+	session.setStdout(commandResposne.stdout)
+	session.setStderr(commandResposne.stderr)
+	defer session.Close()
+	err = session.Run(command)
+	return commandResposne, err
 }
 
 func (sshConn *SSHConn) Close() {
 	sshConn.client.Close()
+}
+
+// SSHConn manage connections
+type SSHConn struct {
+	client sshClient
 }

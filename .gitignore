@@ -1,3 +1,5 @@
 tmp
 vendor/*
 !vendor/vendor.json
+example_playbooks/testing_playbook.az
+cli/azad
