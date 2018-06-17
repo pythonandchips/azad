@@ -4,25 +4,28 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
 	"time"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/pythonandchips/azad/logger"
 	"golang.org/x/crypto/ssh"
 )
 
+// Config for connection
+type Config struct {
+	KeyFilePath string
+}
+
 func (sshConn *SSHConn) ConnectTo(ip string) error {
-	home, _ := homedir.Dir()
-	keyPath := filepath.Join(home, ".ssh", "id_rsa")
-	key, err := ioutil.ReadFile(keyPath)
+	key, err := ioutil.ReadFile(sshConn.config.KeyFilePath)
 	if err != nil {
-		return fmt.Errorf("Unable to read private key %s", keyPath)
+		return fmt.Errorf("Unable to read private key %s", sshConn.config.KeyFilePath)
 	}
+	logger.Info("Using key %s", sshConn.config.KeyFilePath)
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		return fmt.Errorf("Unable to parse private key: %v\n", err)
+		return fmt.Errorf("unable to parse private key: %v", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -93,4 +96,5 @@ func (sshConn *SSHConn) Close() {
 // SSHConn manage connections
 type SSHConn struct {
 	client sshClient
+	config Config
 }

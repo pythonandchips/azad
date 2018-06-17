@@ -28,5 +28,5 @@ func (sshSessionWrapper sshSessionWrapper) setStderr(stderr *bytes.Buffer) {
 }
 
 func (sshSessionWrapper sshSessionWrapper) Run(command string) error {
-	return sshSessionWrapper.Run(command)
+	return sshSessionWrapper.Session.Run(command)
 }
