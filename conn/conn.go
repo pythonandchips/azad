@@ -1,8 +1,10 @@
 package conn
 
+import "bytes"
+
 type Conn interface {
 	ConnectTo(string) error
-	Run(Command) error
+	Run(Command) (CommandResponse, error)
 	Close()
 }
 
@@ -13,9 +15,21 @@ func newConn() Conn {
 }
 
 func newFakeConn() Conn {
-	return &FakeSSHConn{}
+	return &LoggerSSHConn{}
 }
 
 func Simulate() {
 	NewConn = newFakeConn
+}
+
+type sshClient interface {
+	NewSession() (sshSession, error)
+	Close() error
+}
+
+type sshSession interface {
+	setStdout(*bytes.Buffer)
+	setStderr(*bytes.Buffer)
+	Run(string) error
+	Close() error
 }

@@ -5,6 +5,7 @@ import (
 	"plugin"
 
 	"github.com/pythonandchips/azad/conn"
+	"github.com/pythonandchips/azad/logger"
 	"github.com/pythonandchips/azad/schema"
 )
 
@@ -54,5 +55,8 @@ func runCommand(vars map[string]string, connection conn.Conn) error {
 		},
 	}
 
-	return connection.Run(command)
+	commandResponse, err := connection.Run(command)
+	logger.Debug(commandResponse.Stdout())
+	logger.Debug(commandResponse.Stderr())
+	return err
 }
