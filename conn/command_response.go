@@ -2,6 +2,12 @@ package conn
 
 import "bytes"
 
+// Response represent the stdout and stderr of a command over ssh
+type Response interface {
+	Stdout() string
+	Stderr() string
+}
+
 // CommandResponse wraps output from stdout and stderr
 type CommandResponse struct {
 	stdout *bytes.Buffer

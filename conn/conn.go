@@ -4,7 +4,7 @@ import "bytes"
 
 type Conn interface {
 	ConnectTo(string) error
-	Run(Command) (CommandResponse, error)
+	Run(Command) (Response, error)
 	Close()
 }
 

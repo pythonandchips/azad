@@ -97,7 +97,8 @@ func runTasks(tasks azad.Tasks, runners runners) error {
 
 func runTask(task azad.Task, taskSchema schema.Task, runner runner) error {
 	logger.Info("Applying %s:%s on %s", task.Type, task.Name, runner.Address)
-	err := taskSchema.Run(task.Attributes, runner.Conn)
+	context := schema.NewContext(task.Attributes, runner.Conn)
+	err := taskSchema.Run(context)
 	if err != nil {
 		logger.Error("Failed %s:%s on %s", task.Type, task.Name, runner.Address)
 		logger.Error("Error: %s", err)
