@@ -49,7 +49,7 @@ var now = func() int64 {
 // Returns the result of stdout and stderr in the command response
 // Returns an error if an ssh session cannot be created or
 // if the command has a non-zero exit code
-func (sshConn *SSHConn) Run(command Command) (CommandResponse, error) {
+func (sshConn *SSHConn) Run(command Command) (Response, error) {
 	ref := now()
 	writeCommandFile := fmt.Sprintf("echo '%s' > /tmp/azad.%d && chmod +x /tmp/azad.%d", command.generateFile(), ref, ref)
 	if _, err := sshConn.runOnClient(writeCommandFile); err != nil {
@@ -70,7 +70,7 @@ func (sshConn *SSHConn) Run(command Command) (CommandResponse, error) {
 	return commandResposne, err
 }
 
-func (sshConn SSHConn) runOnClient(command string) (CommandResponse, error) {
+func (sshConn SSHConn) runOnClient(command string) (Response, error) {
 	commandResposne := CommandResponse{
 		stdout: bytes.NewBuffer([]byte{}),
 		stderr: bytes.NewBuffer([]byte{}),

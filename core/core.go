@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"plugin"
 
-	"github.com/pythonandchips/azad/conn"
-	"github.com/pythonandchips/azad/logger"
 	"github.com/pythonandchips/azad/schema"
 )
 
@@ -47,16 +45,13 @@ func getSchema() schema.Schema {
 	}
 }
 
-func runCommand(vars map[string]string, connection conn.Conn) error {
-	command := conn.Command{
+func runCommand(context schema.Context) error {
+	command := schema.Command{
 		Interpreter: "bash",
 		Command: []string{
-			vars["command"],
+			context.Get("command"),
 		},
 	}
-
-	commandResponse, err := connection.Run(command)
-	logger.Debug(commandResponse.Stdout())
-	logger.Debug(commandResponse.Stderr())
+	err := context.Run(command)
 	return err
 }

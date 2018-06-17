@@ -18,7 +18,7 @@ func (loggerSSHConn *LoggerSSHConn) ConnectTo(hostName string) error {
 }
 
 // Run output the command to logger.Debug
-func (loggerSSHConn *LoggerSSHConn) Run(command Command) (CommandResponse, error) {
+func (loggerSSHConn *LoggerSSHConn) Run(command Command) (Response, error) {
 	loggerSSHConn.Commands = append(loggerSSHConn.Commands, command)
 	logger.Debug("Running on %s", loggerSSHConn.ConnectedTo)
 	logger.Debug(command.generateFile())
