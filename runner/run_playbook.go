@@ -24,8 +24,11 @@ type runner struct {
 	Variables map[string]string
 }
 
+var config azad.Config
+
 // RunPlaybook run the playbook
-func RunPlaybook(playbookFilePath string, config azad.Config) {
+var RunPlaybook = func(playbookFilePath string, globalConfig azad.Config) {
+	config = globalConfig
 	env := map[string]string{}
 	playbook, err := parser.PlaybookFromFile(playbookFilePath, env)
 	if err != nil {
@@ -60,7 +63,7 @@ func createRunners(addresses []string) (runners, error) {
 	runners := runners{}
 	errors := &multierror.Error{}
 	for _, address := range addresses {
-		connection := conn.NewConn()
+		connection := conn.NewConn(config.SSHConfig())
 		err := connection.ConnectTo(address)
 		if err != nil {
 			errors = multierror.Append(errors, err)
