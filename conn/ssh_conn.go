@@ -13,8 +13,18 @@ import (
 // Config for connection
 type Config struct {
 	KeyFilePath string
+	User        string
 }
 
+var dial = func(ip string, config *ssh.ClientConfig) (sshClient, error) {
+	conn, err := ssh.Dial("tcp", ip+":22", config)
+	if err != nil {
+		return sshClientWrapper{}, fmt.Errorf("Unable to dial %s: %s", ip, err)
+	}
+	return sshClientWrapper{conn}, nil
+}
+
+// ConnectTo creates new connection to specified address
 func (sshConn *SSHConn) ConnectTo(ip string) error {
 	key, err := ioutil.ReadFile(sshConn.config.KeyFilePath)
 	if err != nil {
@@ -29,17 +39,17 @@ func (sshConn *SSHConn) ConnectTo(ip string) error {
 	}
 
 	config := &ssh.ClientConfig{
-		User: "admin",
+		User: sshConn.config.User,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	conn, err := ssh.Dial("tcp", ip+":22", config)
+	client, err := dial(ip, config)
 	if err != nil {
-		return fmt.Errorf("Unable to dial %s: %s", ip, err)
+		return err
 	}
-	sshConn.client = sshClientWrapper{conn}
+	sshConn.client = client
 	return nil
 }
 
@@ -89,6 +99,7 @@ func (sshConn SSHConn) runOnClient(command string) (Response, error) {
 	return commandResposne, err
 }
 
+// Close connection to client
 func (sshConn *SSHConn) Close() {
 	sshConn.client.Close()
 }
