@@ -12,3 +12,7 @@ func TestDefaultSSHKeyPath(t *testing.T) {
 	home, _ := homedir.Dir()
 	assert.Equal(t, defaultSSHKeyPath, home+"/.ssh/id_rsa")
 }
+
+func TestDefaultUser(t *testing.T) {
+	assert.Equal(t, DefaultUser(), "root")
+}

@@ -42,6 +42,11 @@ func flags() []cli.Flag {
 			Value: conn.DefaultSSHKeyPath(),
 			Usage: "ssh key used to connect to server",
 		},
+		cli.StringFlag{
+			Name:  "user, u",
+			Value: "root",
+			Usage: "set user to connect to server",
+		},
 		cli.BoolFlag{
 			Name:  "simulate, s",
 			Usage: "Simulate run and output script to stdout, used for development",

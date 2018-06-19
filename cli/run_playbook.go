@@ -19,6 +19,7 @@ func runPlaybook(c context) error {
 	logger.Info("Applying %s", playbookFilePath)
 	runner.RunPlaybook(playbookFilePath, azad.Config{
 		KeyFilePath: c.String("key"),
+		User:        c.String("user"),
 	})
 	return nil
 }

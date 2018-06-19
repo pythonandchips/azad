@@ -26,12 +26,14 @@ func TestRunPlaybook(t *testing.T) {
 		fakeContext := FakeContext{
 			args: []string{"test_playbook.az"},
 			strings: map[string]string{
-				"key": "path_to_key",
+				"key":  "path_to_key",
+				"user": "admin",
 			},
 		}
 		runPlaybook(fakeContext)
 		assert.Equal(t, specifiedPlaybookFilePath, "test_playbook.az")
 		assert.Equal(t, specifiedConfig.KeyFilePath, "path_to_key")
+		assert.Equal(t, specifiedConfig.User, "admin")
 		assert.False(t, simulation)
 	})
 	t.Run("uses the default playbook if one is not specified", func(t *testing.T) {
