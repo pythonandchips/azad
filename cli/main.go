@@ -6,12 +6,10 @@ import (
 
 	"github.com/pythonandchips/azad/conn"
 	"github.com/pythonandchips/azad/logger"
-	"github.com/pythonandchips/azad/plugins"
 	"github.com/urfave/cli"
 )
 
 func main() {
-	plugins.Configure()
 	logger.Initialize()
 
 	app := app()
@@ -41,11 +39,6 @@ func flags() []cli.Flag {
 			Name:  "key, k",
 			Value: conn.DefaultSSHKeyPath(),
 			Usage: "ssh key used to connect to server",
-		},
-		cli.StringFlag{
-			Name:  "user, u",
-			Value: "root",
-			Usage: "set user to connect to server",
 		},
 		cli.BoolFlag{
 			Name:  "simulate, s",

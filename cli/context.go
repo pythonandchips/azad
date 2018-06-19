@@ -26,5 +26,5 @@ func (context cliContext) NArg() int {
 }
 
 func (context cliContext) String(key string) string {
-	return context.String(key)
+	return context.context.String(key)
 }

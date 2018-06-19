@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseBasicPlaybook(t *testing.T) {
+func TestPlaybookFromFileBasic(t *testing.T) {
 	wd, _ := os.Getwd()
 	filePath := filepath.Join(wd, "fixtures", "basic.az")
 	env := map[string]string{

@@ -7,10 +7,16 @@ import (
 )
 
 type playbookDescription struct {
-	Servers   []serverDescription   `hcl:"server,block"`
-	Hosts     []hostDescription     `hcl:"host,block"`
-	Variables []variableDescription `hcl:"variable,block"`
-	Roles     []roleDescription     `hcl:"role,block"`
+	Inventories []inventoryDescription `hcl:"inventory,block"`
+	Servers     []serverDescription    `hcl:"server,block"`
+	Hosts       []hostDescription      `hcl:"host,block"`
+	Variables   []variableDescription  `hcl:"variable,block"`
+	Roles       []roleDescription      `hcl:"role,block"`
+}
+
+type inventoryDescription struct {
+	Name   string   `hcl:",label"`
+	Config hcl.Body `hcl:",remain"`
 }
 
 type serverDescription struct {

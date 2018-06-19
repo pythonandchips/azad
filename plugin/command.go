@@ -1,24 +1,4 @@
-package schema
-
-// Schema schema
-type Schema struct {
-	Tasks  []Task
-	Fields []Field
-}
-
-// Task executable
-type Task struct {
-	Name   string
-	Fields []Field
-	Run    func(Context) error
-}
-
-// Field field
-type Field struct {
-	Name     string
-	Type     string
-	Required bool
-}
+package plugin
 
 // Command represents a command to be ran on a remote host
 type Command struct {

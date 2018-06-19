@@ -24,6 +24,10 @@ func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error)
 	} else {
 		evalContext.Variables["var"] = cty.MapVal(variables)
 	}
+	inventories, err := unpackInventories(playbookDescription.Inventories, evalContext)
+	if err != nil {
+		return azad.Playbook{}, err
+	}
 	servers, err := unpackServer(playbookDescription.Servers)
 	if err != nil {
 		return azad.Playbook{}, err
@@ -31,9 +35,10 @@ func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error)
 	hosts, err := unpackHosts(playbookDescription.Hosts, evalContext)
 	roles, err := unpackRoles(playbookDescription.Roles, evalContext)
 	return azad.Playbook{
-		Servers: servers,
-		Hosts:   hosts,
-		Roles:   roles,
+		Inventories: inventories,
+		Servers:     servers,
+		Hosts:       hosts,
+		Roles:       roles,
 	}, nil
 }
 

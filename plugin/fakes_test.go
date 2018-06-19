@@ -1,4 +1,4 @@
-package schema
+package plugin
 
 import "github.com/pythonandchips/azad/conn"
 
