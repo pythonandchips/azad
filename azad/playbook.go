@@ -57,3 +57,13 @@ func (playbook Playbook) FindRole(roleName string) (Role, error) {
 	}
 	return Role{}, fmt.Errorf("Role %s not found", roleName)
 }
+
+// ContainsRole test if playbook contains a role by name
+func (playbook Playbook) ContainsRole(roleName string) bool {
+	for _, role := range playbook.Roles {
+		if role.Name == roleName {
+			return true
+		}
+	}
+	return false
+}

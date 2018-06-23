@@ -1,0 +1,7 @@
+task "apt-get.update" "update apt get" {
+  user = "root"
+}
+
+task "apt-get" "install ruby" {
+  pgk = "libv8"
+}

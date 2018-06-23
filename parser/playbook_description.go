@@ -1,6 +1,10 @@
 package parser
 
-import "github.com/hashicorp/hcl2/hcl"
+import (
+	"fmt"
+
+	"github.com/hashicorp/hcl2/hcl"
+)
 
 type playbookDescription struct {
 	Servers   []serverDescription   `hcl:"server,block"`
@@ -19,6 +23,25 @@ type serverDescription struct {
 type variableDescription struct {
 	Name    string `hcl:",label"`
 	Default string `hcl:"default"`
+}
+
+type roleDescriptions []roleDescription
+
+func (roleDescriptions roleDescriptions) RoleFor(name string) (roleDescription, error) {
+	for _, roleDescription := range roleDescriptions {
+		if roleDescription.Name == name {
+			return roleDescription, nil
+		}
+	}
+	return roleDescription{}, fmt.Errorf("role with name %s not found", name)
+}
+
+func (roleDescriptions roleDescriptions) ReplaceWith(role roleDescription) {
+	for i, roleDescription := range roleDescriptions {
+		if roleDescription.Name == role.Name {
+			roleDescriptions[i] = role
+		}
+	}
 }
 
 // Role list of task to be applied to host

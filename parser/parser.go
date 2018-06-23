@@ -1,14 +1,10 @@
 package parser
 
 import (
-	"errors"
-
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/pythonandchips/azad/azad"
 	"github.com/zclconf/go-cty/cty"
 )
-
-var errNoEnv = errors.New("No environment variables")
 
 // PlaybookFromFile return a playbook
 func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error) {
@@ -23,7 +19,11 @@ func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error)
 		return azad.Playbook{}, err
 	}
 	variables, err := unpackVariables(playbookDescription.Variables)
-	evalContext.Variables["var"] = cty.MapVal(variables)
+	if len(variables) == 0 {
+		evalContext.Variables["var"] = cty.MapValEmpty(cty.String)
+	} else {
+		evalContext.Variables["var"] = cty.MapVal(variables)
+	}
 	servers, err := unpackServer(playbookDescription.Servers)
 	if err != nil {
 		return azad.Playbook{}, err
@@ -43,7 +43,7 @@ func envToVariables(env map[string]string) (cty.Value, error) {
 		variables[key] = cty.StringVal(val)
 	}
 	if len(variables) == 0 {
-		return cty.StringVal(""), errNoEnv
+		return cty.MapValEmpty(cty.String), nil
 	}
 	return cty.MapVal(variables), nil
 }

@@ -1,0 +1,12 @@
+server "tag_kibana_server" {
+  addresses = [
+    "10.0.0.1"
+  ]
+}
+
+host "tag_kibana_server" {
+  roles = [
+    "ruby"
+  ]
+}
+
