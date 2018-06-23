@@ -1,0 +1,3 @@
+task "bash" "install patch" {
+  command = "apt-get install patch"
+}
