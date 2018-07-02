@@ -69,3 +69,54 @@ func TestPlaybookTasksForRoles(t *testing.T) {
 		assert.Equal(t, tasks[2].Type, "credstash.lookup")
 	})
 }
+
+func TestPlaybookAddAddressToServerGroup(t *testing.T) {
+	t.Run("when group does not exist", func(t *testing.T) {
+		playbook := Playbook{}
+		playbook.AddAddressToServerByGroup("new_group", "10.0.0.1")
+
+		if len(playbook.Servers) != 1 {
+			t.Fatalf("expected %d servers but got %d", 1, len(playbook.Servers))
+		}
+		server := playbook.Servers[0]
+		assert.Equal(t, server.Group, "new_group")
+
+		if len(server.Addresses) != 1 {
+			t.Fatalf("expected server to have %d addresses but got %d", 1, len(server.Addresses))
+		}
+		assert.Equal(t, server.Addresses[0], "10.0.0.1")
+	})
+	t.Run("when group already exists", func(t *testing.T) {
+		playbook := Playbook{
+			Servers: []Server{
+				{Group: "existing_group", Addresses: []string{"10.0.0.1"}},
+			},
+		}
+		playbook.AddAddressToServerByGroup("existing_group", "10.0.0.2")
+		if len(playbook.Servers) != 1 {
+			t.Fatalf("expected %d servers but got %d", 1, len(playbook.Servers))
+		}
+
+		server := playbook.Servers[0]
+		if len(server.Addresses) != 2 {
+			t.Fatalf("expected server to have %d addresses but got %d", 2, len(server.Addresses))
+		}
+		assert.Equal(t, server.Addresses[1], "10.0.0.2")
+	})
+	t.Run("when group and address already exist", func(t *testing.T) {
+		playbook := Playbook{
+			Servers: []Server{
+				{Group: "existing_group", Addresses: []string{"10.0.0.1"}},
+			},
+		}
+		playbook.AddAddressToServerByGroup("existing_group", "10.0.0.1")
+		if len(playbook.Servers) != 1 {
+			t.Fatalf("expected %d servers but got %d", 1, len(playbook.Servers))
+		}
+
+		server := playbook.Servers[0]
+		if len(server.Addresses) != 1 {
+			t.Fatalf("expected server to have %d addresses but got %d", 1, len(server.Addresses))
+		}
+	})
+}

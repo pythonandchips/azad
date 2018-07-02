@@ -1,4 +1,4 @@
-package schema
+package plugin
 
 import (
 	"github.com/pythonandchips/azad/conn"
@@ -9,6 +9,13 @@ func NewContext(vars map[string]string, conn conn.Conn) Context {
 	return Context{
 		vars: vars,
 		conn: conn,
+	}
+}
+
+// NewInventoryContext create a new context for passing to a plugin to run a task
+func NewInventoryContext(vars map[string]string) Context {
+	return Context{
+		vars: vars,
 	}
 }
 
@@ -47,4 +54,13 @@ func (context Context) Stderr() string {
 // Get the configuration value for the task
 func (context Context) Get(key string) string {
 	return context.vars[key]
+}
+
+// GetWithDefault return value or supplied default
+func (context Context) GetWithDefault(key, def string) string {
+	val, ok := context.vars[key]
+	if !ok {
+		return def
+	}
+	return val
 }

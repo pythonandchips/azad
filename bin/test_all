@@ -10,7 +10,7 @@ while getopts "c" opt; do
   esac
 done
 
-packages=(azad cli conn core logger parser runner schema)
+packages=(azad cli communicator conn helpers logger parser plugin runner)
 coveragepath=./tmp/coverage
 testresults=./tmp/test_results
 mkdir -p $coveragepath
@@ -19,7 +19,7 @@ mkdir -p $testresults
 exitCode=0
 for package in ${packages[@]}; do
   mkdir -p ${testresults}/${package}
-  go test -v -cover -coverprofile=${coveragepath}/${package}.coverage -covermode=set ./${package} > ${testresults}/${package}/${package}.out
+  go test -v -cover -coverprofile=${coveragepath}/${package}.coverage -covermode=set ./${package}/... > ${testresults}/${package}/${package}.out
   retVal=$?
   cat ${testresults}/${package}/${package}.out | go-junit-report > ${testresults}/${package}/results.xml
   if [ $retVal -ne 0 ]; then

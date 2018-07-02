@@ -1,12 +1,17 @@
 package azad
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/pythonandchips/azad/helpers/stringslice"
+)
 
 // Playbook describes servers and there roles
 type Playbook struct {
-	Servers []Server
-	Hosts   []Host
-	Roles   []Role
+	Inventories []Inventory
+	Servers     []Server
+	Hosts       []Host
+	Roles       []Role
 }
 
 // LookupServer lookup server
@@ -17,6 +22,24 @@ func (playbook Playbook) LookupServer(hostName string) (Server, error) {
 		}
 	}
 	return Server{}, fmt.Errorf("server %s not found", hostName)
+}
+
+// AddAddressToServerByGroup adds an address to an existing server or adds
+// a new server if one does not exist with the same group
+// does not add the address if it already exists in the group
+func (playbook *Playbook) AddAddressToServerByGroup(group, address string) {
+	for i, server := range playbook.Servers {
+		if server.Group == group {
+			if stringslice.Exists(address, server.Addresses) {
+				return
+			}
+			server.Addresses = append(server.Addresses, address)
+			playbook.Servers[i] = server
+			return
+		}
+	}
+	server := Server{Group: group, Addresses: []string{address}}
+	playbook.Servers = append(playbook.Servers, server)
 }
 
 // ListTasks list tasks

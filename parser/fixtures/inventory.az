@@ -1,0 +1,17 @@
+inventory "aws.ec2" {
+  access_key_id = "access_key_id"
+  secret_key = "secret_key"
+  connect_on = "PublicIpAddress"
+}
+
+host "tag_kibana_server" {
+  roles = [
+    "elasticsearch"
+  ]
+}
+
+role "elasticsearch" {
+  task "bash" "restart-nginx" {
+    command = "echo \"ran via azad\" >> ./azad.txt"
+  }
+}

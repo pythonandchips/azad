@@ -3,26 +3,12 @@ package runner
 import (
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/pythonandchips/azad/azad"
+	"github.com/pythonandchips/azad/communicator"
 	"github.com/pythonandchips/azad/conn"
 	"github.com/pythonandchips/azad/logger"
 	"github.com/pythonandchips/azad/parser"
-	"github.com/pythonandchips/azad/plugins"
-	"github.com/pythonandchips/azad/schema"
+	"github.com/pythonandchips/azad/plugin"
 )
-
-type runners []runner
-
-func (runners runners) Close() {
-	for _, runner := range runners {
-		runner.Conn.Close()
-	}
-}
-
-type runner struct {
-	Address   string
-	Conn      conn.Conn
-	Variables map[string]string
-}
 
 var config azad.Config
 
@@ -33,6 +19,11 @@ var RunPlaybook = func(playbookFilePath string, globalConfig azad.Config) {
 	playbook, err := parser.PlaybookFromFile(playbookFilePath, env)
 	if err != nil {
 		logger.ErrorAndExit("Playbook is invalid: %s", err)
+	}
+	playbook, err = readInventory(playbook)
+	if err != nil {
+		logger.ErrorAndExit("unable to load inventory: %s", err)
+		return
 	}
 	err = validatePlugins(playbook)
 	if err != nil {
@@ -78,10 +69,9 @@ func createRunners(addresses []string) (runners, error) {
 // ValidatePlugins validate that all plugins and tasks are available
 func validatePlugins(playbook azad.Playbook) error {
 	errors := &multierror.Error{}
-	pluginLoader := plugins.Loader()
 	tasks := playbook.RequiredTasks()
 	for _, task := range tasks {
-		if err := pluginLoader.TaskExists(task.PluginName(), task.TaskName()); err != nil {
+		if _, err := communicator.GetTask(task.PluginName(), task.TaskName()); err != nil {
 			errors = multierror.Append(errors, err)
 		}
 	}
@@ -90,7 +80,7 @@ func validatePlugins(playbook azad.Playbook) error {
 
 func runTasks(tasks azad.Tasks, runners runners) error {
 	for _, task := range tasks {
-		taskSchema, _ := plugins.Loader().GetTask(task.PluginName(), task.TaskName())
+		taskSchema, _ := communicator.GetTask(task.PluginName(), task.TaskName())
 		for _, runner := range runners {
 			runTask(task, taskSchema, runner)
 		}
@@ -98,9 +88,9 @@ func runTasks(tasks azad.Tasks, runners runners) error {
 	return nil
 }
 
-func runTask(task azad.Task, taskSchema schema.Task, runner runner) error {
+func runTask(task azad.Task, taskSchema plugin.Task, runner runner) error {
 	logger.Info("Applying %s:%s on %s", task.Type, task.Name, runner.Address)
-	context := schema.NewContext(task.Attributes, runner.Conn)
+	context := plugin.NewContext(task.Attributes, runner.Conn)
 	err := taskSchema.Run(context)
 	if err != nil {
 		logger.Error("Failed %s:%s on %s", task.Type, task.Name, runner.Address)
