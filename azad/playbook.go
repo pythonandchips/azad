@@ -2,6 +2,7 @@ package azad
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pythonandchips/azad/helpers/stringslice"
 )
@@ -11,7 +12,7 @@ type Playbook struct {
 	Inventories []Inventory
 	Servers     []Server
 	Hosts       []Host
-	Roles       []Role
+	Roles       Roles
 }
 
 // LookupServer lookup server
@@ -60,25 +61,36 @@ func (playbook Playbook) RequiredTasks() Tasks {
 
 // TasksForRoles tasks for role
 func (playbook Playbook) TasksForRoles(roleNames []string) (Tasks, error) {
+	return playbook.tasksForRolesWithDependentCheck(roleNames, []string{})
+}
+
+func (playbook Playbook) tasksForRolesWithDependentCheck(roleNames []string, pastRuns []string) (Tasks, error) {
 	tasks := Tasks{}
 	for _, roleName := range roleNames {
+		if stringslice.Exists(roleName, pastRuns) {
+			pastRuns = append(pastRuns, roleName)
+			path := strings.Join(pastRuns, " > ")
+			return tasks, fmt.Errorf("dependent Loop detected %s", path)
+		}
+		pastRuns = append(pastRuns, roleName)
 		role, err := playbook.FindRole(roleName)
 		if err != nil {
 			return tasks, err
 		}
+		dependentTasks, err := playbook.tasksForRolesWithDependentCheck(role.Dependents, pastRuns)
+		if err != nil {
+			return tasks, err
+		}
+		tasks = append(tasks, dependentTasks...)
 		tasks = append(tasks, role.Tasks...)
+		pastRuns = pastRuns[:len(pastRuns)-1]
 	}
 	return tasks, nil
 }
 
 // FindRole find role
 func (playbook Playbook) FindRole(roleName string) (Role, error) {
-	for _, role := range playbook.Roles {
-		if role.Name == roleName {
-			return role, nil
-		}
-	}
-	return Role{}, fmt.Errorf("Role %s not found", roleName)
+	return playbook.Roles.FindRole(roleName)
 }
 
 // ContainsRole test if playbook contains a role by name

@@ -8,7 +8,10 @@ import (
 func unpackRoles(rolesDescriptions []roleDescription, evalContext *hcl.EvalContext) ([]azad.Role, error) {
 	roles := []azad.Role{}
 	for _, roleDescription := range rolesDescriptions {
-		role := azad.Role{Name: roleDescription.Name}
+		role := azad.Role{
+			Name:       roleDescription.Name,
+			Dependents: roleDescription.Dependents,
+		}
 		tasks, _ := unpackTasks(roleDescription.Tasks, evalContext)
 		role.Tasks = tasks
 		roles = append(roles, role)

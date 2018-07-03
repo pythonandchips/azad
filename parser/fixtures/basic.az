@@ -22,4 +22,6 @@ role "elasticsearch" {
   task "bash" "restart-nginx" {
     command = "echo \"ran via azad\" >> ${ var.output_file }"
   }
+
+  dependents = ["java"]
 }

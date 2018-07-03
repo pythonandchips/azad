@@ -59,6 +59,7 @@ func TestPlaybookFromFileBasic(t *testing.T) {
 		}
 		role := playbook.Roles[0]
 		assert.Equal(t, role.Name, "elasticsearch")
+		assert.Equal(t, role.Dependents, []string{"java"})
 
 		t.Run("parses the tasks for the role", func(t *testing.T) {
 			tasks := role.Tasks
