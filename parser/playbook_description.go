@@ -52,9 +52,10 @@ func (roleDescriptions roleDescriptions) ReplaceWith(role roleDescription) {
 
 // Role list of task to be applied to host
 type roleDescription struct {
-	Name   string            `hcl:",label"`
-	Tasks  []taskDescription `hcl:"task,block"`
-	Config hcl.Body          `hcl:",remain"`
+	Name       string            `hcl:",label"`
+	Dependents []string          `hcl:"dependents,optional"`
+	Tasks      []taskDescription `hcl:"task,block"`
+	Config     hcl.Body          `hcl:",remain"`
 }
 
 // Task run command via ssh

@@ -38,25 +38,26 @@ func TestPlaybookListRequirements(t *testing.T) {
 }
 
 func TestPlaybookTasksForRoles(t *testing.T) {
-	playbook := Playbook{
-		Roles: []Role{
-			{
-				Name: "install_ruby",
-				Tasks: []Task{
-					{Type: "debian.apt-get", Name: "Install ruby"},
-				},
-			},
-			{
-				Name: "elastic_search",
-				Tasks: []Task{
-					{Type: "bash", Name: "list files"},
-					{Type: "credstash.lookup", Name: "list files"},
-				},
-			},
-		},
-	}
 	t.Run("list tasks for given roles", func(t *testing.T) {
-		roleNames := []string{"install_ruby", "elastic_search"}
+		playbook := Playbook{
+			Roles: []Role{
+				{
+					Name: "install_java",
+					Tasks: []Task{
+						{Type: "debian.apt-get", Name: "Install java"},
+					},
+				},
+				{
+					Name: "elastic_search",
+					Tasks: []Task{
+						{Type: "bash", Name: "list files"},
+						{Type: "credstash.lookup", Name: "list files"},
+					},
+					Dependents: []string{"install_java"},
+				},
+			},
+		}
+		roleNames := []string{"elastic_search"}
 		tasks, _ := playbook.TasksForRoles(roleNames)
 
 		if len(tasks) != 3 {
@@ -67,6 +68,35 @@ func TestPlaybookTasksForRoles(t *testing.T) {
 		assert.Equal(t, tasks[0].Type, "debian.apt-get")
 		assert.Equal(t, tasks[1].Type, "bash")
 		assert.Equal(t, tasks[2].Type, "credstash.lookup")
+	})
+	t.Run("returns error if tasks have a dependency loop", func(t *testing.T) {
+		playbook := Playbook{
+			Roles: []Role{
+				{
+					Name: "install_java",
+					Tasks: []Task{
+						{Type: "debian.apt-get", Name: "Install java"},
+					},
+					Dependents: []string{"elastic_search"},
+				},
+				{
+					Name: "elastic_search",
+					Tasks: []Task{
+						{Type: "bash", Name: "list files"},
+						{Type: "credstash.lookup", Name: "list files"},
+					},
+					Dependents: []string{"install_java"},
+				},
+			},
+		}
+		roleNames := []string{"elastic_search"}
+		_, err := playbook.TasksForRoles(roleNames)
+
+		if err == nil {
+			t.Fatalf("expected and error but got none")
+		}
+
+		assert.Equal(t, err.Error(), "dependent Loop detected elastic_search > install_java > elastic_search")
 	})
 }
 
