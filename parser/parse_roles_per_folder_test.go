@@ -54,15 +54,16 @@ func TestParseRolesPerFolder(t *testing.T) {
 		if len(roles) != 3 {
 			t.Fatalf("Expected %d roles but got %d", 3, len(roles))
 		}
-		assert.True(t, playbook.ContainsRole("ruby"), "Expected playbook to contain ruby role")
+		assert.True(t, playbook.ContainsRole("ruby"), "expected playbook to contain ruby role")
 		assert.True(t, playbook.ContainsRole("security/firewall"), "expected playbook to contain security/firewall role")
 		assert.True(t, playbook.ContainsRole("security/patches"), "expected playbook to contain security/patches role")
 
 		t.Run("parses tasks for role", func(t *testing.T) {
 			rubyRole, _ := playbook.FindRole("ruby")
 
-			if len(rubyRole.Tasks) != 2 {
-				t.Fatalf("Expected %d tasks but got %d", 2, len(rubyRole.Tasks))
+			expectedNoOfTasks := 3
+			if len(rubyRole.Tasks) != expectedNoOfTasks {
+				t.Fatalf("Expected %d tasks but got %d", expectedNoOfTasks, len(rubyRole.Tasks))
 			}
 		})
 	})

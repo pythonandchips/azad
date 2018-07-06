@@ -2,6 +2,10 @@ task "apt-get.update" "update apt get" {
   user = "root"
 }
 
+include {
+  path = "dependencies"
+}
+
 task "apt-get" "install ruby" {
   pgk = "libv8"
 }

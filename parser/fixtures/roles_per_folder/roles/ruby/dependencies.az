@@ -1,0 +1,3 @@
+task "bash" "install nginx" {
+  command = "apt-get install nginx"
+}
