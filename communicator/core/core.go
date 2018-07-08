@@ -28,12 +28,13 @@ func GetSchema() plugin.Schema {
 	}
 }
 
-func bash(context plugin.Context) error {
+func bash(context plugin.Context) (map[string]string, error) {
 	command := plugin.Command{
 		Interpreter: "bash",
 		Command: []string{
 			context.Get("command"),
 		},
 	}
-	return context.Run(command)
+	err := context.Run(command)
+	return map[string]string{}, err
 }

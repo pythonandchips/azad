@@ -9,7 +9,7 @@ type Schema struct {
 // Task executable
 type Task struct {
 	Fields []Field
-	Run    func(Context) error
+	Run    func(Context) (map[string]string, error)
 }
 
 // Field field

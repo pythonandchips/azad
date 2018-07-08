@@ -63,15 +63,15 @@ func TestPlaybookFromFileBasic(t *testing.T) {
 
 		t.Run("parses the tasks for the role", func(t *testing.T) {
 			tasks := role.Tasks
-			if len(tasks) != 1 {
+			if len(tasks) != 2 {
 				t.Fatalf("Expected %d tasks for %s role but got %d", 1, role.Name, len(tasks))
 			}
 
 			task := role.Tasks[0]
-			assert.Equal(t, task.Type, "bash")
-			assert.Equal(t, task.Name, "restart-nginx")
+			assert.Equal(t, task.Type, "stat")
+			assert.Equal(t, task.Name, "ruby-exists")
 
-			assert.Equal(t, task.Attributes["command"], "echo \"ran via azad\" >> azad.txt")
+			assert.Equal(t, task.Attributes["path"].Name, "path")
 		})
 	})
 }

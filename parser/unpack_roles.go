@@ -85,11 +85,10 @@ func unpackTask(body *hcl.Block, evalContext *hcl.EvalContext) (azad.Task, error
 		Type: body.Labels[0],
 		Name: body.Labels[1],
 	}
-	attributes := map[string]string{}
+	attributes := map[string]*hcl.Attribute{}
 	attributesList, _ := body.Body.JustAttributes()
 	for _, attr := range attributesList {
-		value, _ := attr.Expr.Value(evalContext)
-		attributes[attr.Name] = value.AsString()
+		attributes[attr.Name] = attr
 	}
 	task.Attributes = attributes
 	return task, nil
