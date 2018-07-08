@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/hcl2/gohcl"
 	"github.com/hashicorp/hcl2/hcl"
@@ -16,12 +17,29 @@ func loadConfigFile(filename string) (playbookDescription, error) {
 	if err != nil {
 		return playbookDescription, err
 	}
-	roleDescriptions, err := parseRoles(filename)
+	roleDescriptionGroups, err := parseRoles(filename)
 	if err != nil {
 		return playbookDescription, err
 	}
-	playbookDescription.Roles = append(playbookDescription.Roles, roleDescriptions...)
+	playbookRoleDescriptions := createRoleDescriptionGroupRoleDescriptions(playbookDescription.Roles)
+	roleDescriptionGroups = append(roleDescriptionGroups, playbookRoleDescriptions...)
+	playbookDescription.roleDescriptionGroups = roleDescriptionGroups
+
 	return playbookDescription, err
+}
+
+func createRoleDescriptionGroupRoleDescriptions(roleDescriptions roleDescriptions) roleDescriptionGroups {
+	roleDescriptionGroups := roleDescriptionGroups{}
+	for _, roleDescription := range roleDescriptions {
+		roleDescriptionGroup := roleDescriptionGroup{
+			name: roleDescription.Name,
+			files: []roleFile{
+				{name: "main", roleDescription: roleDescription},
+			},
+		}
+		roleDescriptionGroups = append(roleDescriptionGroups, roleDescriptionGroup)
+	}
+	return roleDescriptionGroups
 }
 
 func parsePlaybookConfig(filename string) (playbookDescription, error) {
@@ -47,98 +65,102 @@ func parsePlaybookConfig(filename string) (playbookDescription, error) {
 	return playbook, nil
 }
 
-func parseRoles(filename string) (roleDescriptions, error) {
+func parseRoles(filename string) (roleDescriptionGroups, error) {
 	dirPath := filepath.Dir(filename)
 	rolesFolderPath := filepath.Join(dirPath, "roles")
-	roleDescriptions := roleDescriptions{}
+	roleDescriptionGroups := roleDescriptionGroups{}
 
 	err := filepath.Walk(rolesFolderPath, func(path string, info os.FileInfo, err error) error {
 		if path == rolesFolderPath {
 			return nil
 		}
-		roleDescriptions, err = handleFilePath(roleDescriptions, rolesFolderPath, path, info)
+		roleDescriptionGroups, err = handleFilePath(roleDescriptionGroups, rolesFolderPath, path, info)
 		return err
 	})
 
-	return roleDescriptions, err
+	return roleDescriptionGroups, err
 }
 
 func handleFilePath(
-	roleDescriptions roleDescriptions,
+	roleDescriptionGroups roleDescriptionGroups,
 	rolesFolderPath, path string,
 	info os.FileInfo,
-) (roleDescriptions, error) {
+) (roleDescriptionGroups, error) {
 	// Ignore roles folder, all roles must be contained in a folder
 	if info.IsDir() {
-		roleDescription, err := createRoleDescriptionFromFolder(rolesFolderPath, path)
+		roleDescriptionGroup, err := createRoleDescriptionGroupFromFolder(rolesFolderPath, path)
 		if err != nil {
-			return roleDescriptions, nil
+			return roleDescriptionGroups, nil
 		}
-		roleDescriptions = append(roleDescriptions, roleDescription)
-		return roleDescriptions, nil
+		roleDescriptionGroups = append(roleDescriptionGroups, roleDescriptionGroup)
+		return roleDescriptionGroups, nil
 	}
 	// only parse file with .az extension
 	if filepath.Ext(path) != ".az" {
-		return roleDescriptions, nil
+		return roleDescriptionGroups, nil
 	}
-	err := createRoleFromConfig(path, rolesFolderPath, roleDescriptions)
-	return roleDescriptions, err
+	return createRoleFromConfig(path, rolesFolderPath, roleDescriptionGroups)
 }
 
 func createRoleFromConfig(
 	path, rolesFolderPath string,
-	roleDescriptions roleDescriptions,
-) error {
+	roleDescriptionGroups roleDescriptionGroups,
+) (roleDescriptionGroups, error) {
 	dirPath := filepath.Dir(path)
 	roleName, err := filepath.Rel(rolesFolderPath, dirPath)
 	if err != nil {
-		return err
+		return roleDescriptionGroups, err
 	}
-	role, err := roleDescriptions.RoleFor(roleName)
+	roleDescriptionGroup, err := roleDescriptionGroups.RoleFor(roleName)
 	if err != nil {
-		return err
+		return roleDescriptionGroups, err
 	}
-	err = parseRoleConfig(path, &role)
+	roleFile, err := parseRoleConfig(path)
 	if err != nil {
-		return fmt.Errorf("Failed to parse role %s: %s", roleName, err)
+		return roleDescriptionGroups, fmt.Errorf("Failed to parse role %s: %s", roleName, err)
 	}
-	roleDescriptions.ReplaceWith(role)
-	return nil
+	roleDescriptionGroup.files = append(roleDescriptionGroup.files, roleFile)
+	roleDescriptionGroups.ReplaceWith(roleDescriptionGroup)
+	return roleDescriptionGroups, nil
 }
 
-func parseRoleConfig(path string, role *roleDescription) error {
+func parseRoleConfig(path string) (roleFile, error) {
+	name := filepath.Base(path)
+	name = strings.Replace(name, ".az", "", -1)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return err
+		return roleFile{}, err
 	}
 	file, parseErr := hclsyntax.ParseConfig(
 		data,
 		"config",
 		hcl.Pos{Line: 1, Column: 1},
 	)
-
 	if parseErr.HasErrors() {
-		return parseErr
+		return roleFile{}, parseErr
 	}
-	if parseErr = gohcl.DecodeBody(file.Body, nil, role); parseErr.HasErrors() {
-		return parseErr
+	roleDescription := roleDescription{Name: name}
+	parseErr = gohcl.DecodeBody(file.Body, nil, &roleDescription)
+	if parseErr.HasErrors() {
+		return roleFile{}, parseErr
 	}
-	return nil
+	roleFile := roleFile{name: name, roleDescription: roleDescription}
+	return roleFile, nil
 }
 
-func createRoleDescriptionFromFolder(rolesFolderPath, path string) (roleDescription, error) {
+func createRoleDescriptionGroupFromFolder(rolesFolderPath, path string) (roleDescriptionGroup, error) {
 	globPath := filepath.Join(path, "*.az")
 	azadFiles, _ := filepath.Glob(globPath)
 	// Ignore folders that do not contain any azad file
 	if len(azadFiles) == 0 {
-		return roleDescription{}, fmt.Errorf("No azad files found")
+		return roleDescriptionGroup{}, fmt.Errorf("No azad files found")
 	}
 	roleName, err := filepath.Rel(rolesFolderPath, path)
 	if err != nil {
-		return roleDescription{}, fmt.Errorf("Unable to find relative path")
+		return roleDescriptionGroup{}, fmt.Errorf("Unable to find relative path")
 	}
-	roleDescription := roleDescription{
-		Name: roleName,
+	roleDescriptionGroup := roleDescriptionGroup{
+		name: roleName,
 	}
-	return roleDescription, nil
+	return roleDescriptionGroup, nil
 }
