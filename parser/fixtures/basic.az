@@ -19,8 +19,12 @@ host "tag_kibana_server" {
 }
 
 role "elasticsearch" {
+  task "stat" "ruby-exists" {
+    path = "/usr/bin/ruby"
+  }
+
   task "bash" "restart-nginx" {
-    command = "echo \"ran via azad\" >> ${ var.output_file }"
+    command = "echo \"does ruby exist ${ ruby-exists.exists }\" >> ${ var.output_file }"
   }
 
   dependents = ["java"]

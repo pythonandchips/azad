@@ -7,7 +7,6 @@ import (
 	"github.com/pythonandchips/azad/conn"
 	"github.com/pythonandchips/azad/logger"
 	"github.com/pythonandchips/azad/parser"
-	"github.com/pythonandchips/azad/plugin"
 )
 
 var config azad.Config
@@ -60,7 +59,7 @@ func createRunners(addresses []string) (runners, error) {
 			errors = multierror.Append(errors, err)
 			break
 		}
-		runner := runner{Conn: connection, Address: address}
+		runner := newRunner(connection, address)
 		runners = append(runners, runner)
 	}
 	return runners, errors.ErrorOrNil()
@@ -85,18 +84,5 @@ func runTasks(tasks azad.Tasks, runners runners) error {
 			runTask(task, taskSchema, runner)
 		}
 	}
-	return nil
-}
-
-func runTask(task azad.Task, taskSchema plugin.Task, runner runner) error {
-	logger.Info("Applying %s:%s on %s", task.Type, task.Name, runner.Address)
-	context := plugin.NewContext(task.Attributes, runner.Conn)
-	err := taskSchema.Run(context)
-	if err != nil {
-		logger.Error("Failed %s:%s on %s", task.Type, task.Name, runner.Address)
-		logger.Error("Error: %s", err)
-		return err
-	}
-	logger.Info("Success %s:%s on %s", task.Type, task.Name, runner.Address)
 	return nil
 }

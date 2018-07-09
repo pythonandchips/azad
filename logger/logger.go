@@ -21,6 +21,26 @@ func StubLogger() {
 	err = log.New(ioutil.Discard, "", 0)
 }
 
+// TestLogger applies a test logger to allow fetching of logoutput during tests
+func TestLogger() *LogOutput {
+	logOutput := &LogOutput{}
+	info = log.New(logOutput, "INFO: ", 0)
+	debug = log.New(logOutput, "DEBUG: ", 0)
+	warn = log.New(logOutput, "WARN: ", 0)
+	err = log.New(logOutput, "ERR: ", 0)
+	return logOutput
+}
+
+// LogOutput store the log output as an array of lines
+type LogOutput struct {
+	Lines []string
+}
+
+func (logoutput *LogOutput) Write(p []byte) (int, error) {
+	logoutput.Lines = append(logoutput.Lines, string(p))
+	return len(p), nil
+}
+
 // Initialize loggers for each level
 func Initialize() {
 	info = log.New(os.Stdout, color.BlueString("[INFO] "), 0)

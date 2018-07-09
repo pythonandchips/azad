@@ -1,6 +1,10 @@
 package azad
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/hashicorp/hcl2/hcl"
+)
 
 // Tasks list of tasks
 type Tasks []Task
@@ -31,7 +35,7 @@ func (tasks Tasks) UniqueTypes() Tasks {
 type Task struct {
 	Type       string
 	Name       string
-	Attributes map[string]string
+	Attributes map[string]*hcl.Attribute
 }
 
 // PluginName name of plugin
