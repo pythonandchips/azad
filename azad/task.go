@@ -36,6 +36,7 @@ type Task struct {
 	Type       string
 	Name       string
 	Attributes map[string]*hcl.Attribute
+	Condition  *hcl.Attribute
 }
 
 // PluginName name of plugin

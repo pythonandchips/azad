@@ -51,7 +51,6 @@ type roleDescription struct {
 	Name       string   `hcl:",label"`
 	Dependents []string `hcl:"dependents,optional"`
 	Config     hcl.Body `hcl:",remain"`
-	// Tasks      []taskDescription `hcl:"task,block"`
 }
 
 // Task run command via ssh
