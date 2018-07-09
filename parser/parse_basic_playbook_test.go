@@ -72,6 +72,10 @@ func TestPlaybookFromFileBasic(t *testing.T) {
 			assert.Equal(t, task.Name, "ruby-exists")
 
 			assert.Equal(t, task.Attributes["path"].Name, "path")
+			t.Run("parse task with a conditional", func(t *testing.T) {
+				conditionalTask := role.Tasks[1]
+				assert.NotNil(t, conditionalTask.Condition)
+			})
 		})
 	})
 }

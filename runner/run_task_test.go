@@ -20,6 +20,12 @@ func TestRunTask(t *testing.T) {
 			"previous_result": map[string]string{
 				"ok": "ok",
 			},
+			"ruby-exists": map[string]string{
+				"exists": "false",
+			},
+			"python-exists": map[string]string{
+				"exists": "true",
+			},
 		},
 		Variables: map[string]string{
 			"dynamic_value": "dvalue",
@@ -68,7 +74,7 @@ func TestRunTask(t *testing.T) {
 			assert.Equal(t, testLogger.Lines[1], "INFO: Success nil-task:nil-task on 10.0.0.1\n")
 		})
 	})
-	t.Run("with a failing task", func(t *testing.T) {
+	t.Run("logs error if task fails", func(t *testing.T) {
 		testLogger := logger.TestLogger()
 		failingPluginTask := plugin.Task{
 			Fields: []plugin.Field{},
@@ -88,6 +94,30 @@ func TestRunTask(t *testing.T) {
 		assert.Equal(t, testLogger.Lines[0], "INFO: Applying failing-task:failing-task on 10.0.0.1\n")
 		assert.Equal(t, testLogger.Lines[1], "ERR: Failed failing-task:failing-task on 10.0.0.1\n")
 		assert.Equal(t, testLogger.Lines[2], "ERR: Error: some task error\n")
+	})
+	t.Run("skips task if condition is meet", func(t *testing.T) {
+		testLogger := logger.TestLogger()
+		taskHasRan := false
+		conditionalPluginTask := plugin.Task{
+			Fields: []plugin.Field{},
+			Run: func(context plugin.Context) (map[string]string, error) {
+				taskHasRan = true
+				return map[string]string{}, nil
+			},
+		}
+		conditionalTask := azad.Task{
+			Type:       "conditional-task",
+			Name:       "conditional-task",
+			Attributes: map[string]*hcl.Attribute{},
+			Condition:  testExpression("condition", "${not(ruby-exists.exists)}"),
+		}
+		err := runTask(conditionalTask, conditionalPluginTask, runner)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		assert.Equal(t, taskHasRan, false)
+		assert.Equal(t, testLogger.Lines[0], "INFO: Applying conditional-task:conditional-task on 10.0.0.1\n")
+		assert.Equal(t, testLogger.Lines[1], "INFO: Skipping conditional-task:conditional-task on 10.0.0.1, condition failed\n")
 	})
 }
 

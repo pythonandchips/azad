@@ -25,6 +25,7 @@ role "elasticsearch" {
 
   task "bash" "restart-nginx" {
     command = "echo \"does ruby exist ${ ruby-exists.exists }\" >> ${ var.output_file }"
+    condition = "${not(ruby-exists.exists)}"
   }
 
   dependents = ["java"]
