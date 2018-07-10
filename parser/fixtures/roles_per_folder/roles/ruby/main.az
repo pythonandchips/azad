@@ -1,3 +1,9 @@
+dependents = ["security/firewall", "security/patches"]
+
+variable "install_path" {
+  default = "${var.home}/ruby"
+}
+
 task "apt-get.update" "update apt get" {
   user = "root"
 }

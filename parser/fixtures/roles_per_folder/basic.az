@@ -8,5 +8,9 @@ host "tag_kibana_server" {
   roles = [
     "ruby"
   ]
+
+  variable "home" {
+    default = "/home"
+  }
 }
 

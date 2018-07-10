@@ -17,6 +17,27 @@ func (roleDescriptionGroups roleDescriptionGroups) RoleFor(name string) (roleDes
 	return roleDescriptionGroup{}, fmt.Errorf("role with name %s not found", name)
 }
 
+func (roleDescriptionGroups roleDescriptionGroups) FilterMany(names []string) (roleDescriptionGroups, error) {
+	filteredRoleDescriptionGroups := []roleDescriptionGroup{}
+	for _, name := range names {
+		roleDescriptionGroup, err := roleDescriptionGroups.Filter(name)
+		if err != nil {
+			return roleDescriptionGroups, err
+		}
+		filteredRoleDescriptionGroups = append(filteredRoleDescriptionGroups, roleDescriptionGroup)
+	}
+	return filteredRoleDescriptionGroups, nil
+}
+
+func (roleDescriptionGroups roleDescriptionGroups) Filter(name string) (roleDescriptionGroup, error) {
+	for _, roleDescriptionGroup := range roleDescriptionGroups {
+		if roleDescriptionGroup.name == name {
+			return roleDescriptionGroup, nil
+		}
+	}
+	return roleDescriptionGroup{}, fmt.Errorf("role description group not found")
+}
+
 func (roleDescriptionGroups roleDescriptionGroups) ReplaceWith(role roleDescriptionGroup) {
 	for i, roleDescriptionGroup := range roleDescriptionGroups {
 		if roleDescriptionGroup.name == role.name {
@@ -48,9 +69,10 @@ type roleDescriptions []roleDescription
 
 // Role list of task to be applied to host
 type roleDescription struct {
-	Name       string   `hcl:",label"`
-	Dependents []string `hcl:"dependents,optional"`
-	Config     hcl.Body `hcl:",remain"`
+	Name       string                `hcl:",label"`
+	Dependents []string              `hcl:"dependents,optional"`
+	Variables  []variableDescription `hcl:"variable,block"`
+	Config     hcl.Body              `hcl:",remain"`
 }
 
 // Task run command via ssh

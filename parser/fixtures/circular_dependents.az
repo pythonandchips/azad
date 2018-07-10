@@ -1,0 +1,13 @@
+host "tag_kibana_server" {
+  roles = [
+    "elasticsearch"
+  ]
+}
+
+role "elasticsearch" {
+  dependents = ["java"]
+}
+
+role "java" {
+  dependents = ["elasticsearch"]
+}

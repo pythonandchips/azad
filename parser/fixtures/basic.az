@@ -8,17 +8,29 @@ variable "elastic_search_role" {
   default = "elasticsearch"
 }
 
-variable "output_file" {
-  default = "azad.txt"
+variable "base_path" {
+  default = "/opt"
 }
 
 host "tag_kibana_server" {
   roles = [
     "${var.elastic_search_role}"
   ]
+
+  variable "install_path" {
+    default = "${var.base_path}/installer"
+  }
+
+  variable "home_path" {
+    default = "${var.base_path}/home"
+  }
 }
 
 role "elasticsearch" {
+  variable "ruby_install_path" {
+    default = "${var.install_path}/ruby"
+  }
+
   task "stat" "ruby-exists" {
     path = "/usr/bin/ruby"
   }
@@ -27,6 +39,4 @@ role "elasticsearch" {
     command = "echo \"does ruby exist ${ ruby-exists.exists }\" >> ${ var.output_file }"
     condition = "${not(ruby-exists.exists)}"
   }
-
-  dependents = ["java"]
 }

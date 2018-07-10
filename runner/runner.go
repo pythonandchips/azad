@@ -5,54 +5,62 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type runners []*runner
-
-func (runners runners) Close() {
-	for _, runner := range runners {
-		runner.Conn.Close()
-	}
-}
-
-func newRunner(conn conn.Conn, address string) *runner {
+func newRunner(conn conn.Conn, address string, variables map[string]cty.Value) *runner {
 	runner := runner{
-		Conn:        conn,
-		Address:     address,
-		taskResults: map[string]taskResult{},
+		Conn:            conn,
+		Address:         address,
+		GlobalVariables: variables,
+		taskResults:     map[string]taskResult{},
 	}
 	return &runner
 }
 
 type runner struct {
-	Address     string
-	Conn        conn.Conn
-	Variables   variables
-	taskResults map[string]taskResult
+	Address         string
+	Conn            conn.Conn
+	GlobalVariables map[string]cty.Value
+	taskResults     map[string]taskResult
+}
+
+func (r *runner) newChild(variables map[string]cty.Value) *runner {
+	return &runner{
+		Address:         r.Address,
+		Conn:            r.Conn,
+		GlobalVariables: mergeVariables(r.GlobalVariables, variables),
+		taskResults:     map[string]taskResult{},
+	}
 }
 
 type taskResult map[string]string
-type variables map[string]string
 
-func (runner *runner) setResult(name string, result map[string]string) {
-	runner.taskResults[name] = result
+func (taskResult taskResult) toCtyValue() cty.Value {
+	if len(taskResult) == 0 {
+		return cty.MapValEmpty(cty.String)
+	}
+	variables := map[string]cty.Value{}
+	for key, value := range taskResult {
+		variables[key] = cty.StringVal(value)
+	}
+	return cty.MapVal(variables)
 }
 
-func (runner runner) toContext() map[string]cty.Value {
+func (r *runner) setResult(name string, result map[string]string) {
+	r.taskResults[name] = result
+}
+
+func (r runner) toContext() map[string]cty.Value {
 	context := map[string]cty.Value{
-		"var": mapToCtyValue(runner.Variables),
+		"var": mapToCtyValue(r.GlobalVariables),
 	}
-	for k, v := range runner.taskResults {
-		context[k] = mapToCtyValue(v)
+	for k, v := range r.taskResults {
+		context[k] = v.toCtyValue()
 	}
 	return context
 }
 
-func mapToCtyValue(data map[string]string) cty.Value {
+func mapToCtyValue(data map[string]cty.Value) cty.Value {
 	if len(data) == 0 {
 		return cty.MapValEmpty(cty.String)
 	}
-	vars := map[string]cty.Value{}
-	for k, v := range data {
-		vars[k] = cty.StringVal(v)
-	}
-	return cty.MapVal(vars)
+	return cty.MapVal(data)
 }

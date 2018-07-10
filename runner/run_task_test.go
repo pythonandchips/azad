@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hcl/hclsyntax"
 	"github.com/pythonandchips/azad/azad"
+	"github.com/pythonandchips/azad/expect"
 	"github.com/pythonandchips/azad/logger"
 	"github.com/pythonandchips/azad/plugin"
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestRunTask(t *testing.T) {
@@ -27,8 +29,8 @@ func TestRunTask(t *testing.T) {
 				"exists": "true",
 			},
 		},
-		Variables: map[string]string{
-			"dynamic_value": "dvalue",
+		GlobalVariables: map[string]cty.Value{
+			"dynamic_value": cty.StringVal("dvalue"),
 		},
 	}
 	t.Run("with a successful task", func(t *testing.T) {
@@ -69,7 +71,7 @@ func TestRunTask(t *testing.T) {
 			assert.Equal(t, ok, true, "expected varaibles to contain %s", "nil-task")
 		})
 		t.Run("writes output to log", func(t *testing.T) {
-			assertLengthFatal(t, len(testLogger.Lines), 2)
+			expect.EqualFatal(t, len(testLogger.Lines), 2)
 			assert.Equal(t, testLogger.Lines[0], "INFO: Applying nil-task:nil-task on 10.0.0.1\n")
 			assert.Equal(t, testLogger.Lines[1], "INFO: Success nil-task:nil-task on 10.0.0.1\n")
 		})
@@ -128,11 +130,5 @@ func testExpression(name, value string) *hcl.Attribute {
 	}
 	return &hcl.Attribute{
 		Name: name, Expr: expr,
-	}
-}
-
-func assertLengthFatal(t *testing.T, length, expected int) {
-	if length != expected {
-		t.Fatalf("expected %d log lines but got %d", expected, length)
 	}
 }
