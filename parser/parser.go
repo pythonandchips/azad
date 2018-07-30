@@ -20,9 +20,9 @@ func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error)
 	if err != nil {
 		errors = multierror.Append(errors, err)
 	}
-	variables, err := unpackVariables(playbookDescription.Variables)
+	variables, err := unpackVariables(playbookDescription.Variables, evalContext)
 	if err != nil {
-		errors = multierror.Append(errors, err)
+		return azad.Playbook{}, err
 	}
 	if len(variables) == 0 {
 		evalContext.Variables["var"] = cty.MapValEmpty(cty.String)
@@ -37,11 +37,7 @@ func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error)
 	if err != nil {
 		errors = multierror.Append(errors, err)
 	}
-	hosts, err := unpackHosts(playbookDescription.Hosts, evalContext)
-	if err != nil {
-		errors = multierror.Append(errors, err)
-	}
-	roles, err := unpackRoles(playbookDescription.roleDescriptionGroups, evalContext)
+	hosts, err := unpackHosts(playbookDescription.Hosts, playbookDescription.roleDescriptionGroups, evalContext)
 	if err != nil {
 		errors = multierror.Append(errors, err)
 	}
@@ -49,7 +45,7 @@ func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error)
 		Inventories: inventories,
 		Servers:     servers,
 		Hosts:       hosts,
-		Roles:       roles,
+		Variables:   variables,
 	}, errors.ErrorOrNil()
 }
 

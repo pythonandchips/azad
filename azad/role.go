@@ -1,6 +1,10 @@
 package azad
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/zclconf/go-cty/cty"
+)
 
 // Roles collection of role's
 type Roles []Role
@@ -20,4 +24,5 @@ type Role struct {
 	Name       string
 	Dependents []string
 	Tasks      Tasks
+	Variables  map[string]cty.Value
 }

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pythonandchips/azad/expect"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,34 +38,33 @@ func TestParseRolesPerFolder(t *testing.T) {
 
 	t.Run("returns the host configuration", func(t *testing.T) {
 		hosts := playbook.Hosts
-		if len(hosts) != 1 {
-			t.Fatalf("Expected %d hosts but got %d", 1, len(hosts))
-		}
+
+		expect.EqualFatal(t, len(hosts), 1)
 
 		host := hosts[0]
 		assert.Equal(t, host.ServerGroup, "tag_kibana_server")
-		if len(host.Roles) != 1 {
-			t.Fatalf("Expected host with %d roles but got %d", 1, len(host.Roles))
-		}
-		assert.Equal(t, host.Roles, []string{"ruby"})
-	})
 
-	t.Run("returns the roles configuration", func(t *testing.T) {
-		roles := playbook.Roles
-		if len(roles) != 3 {
-			t.Fatalf("Expected %d roles but got %d", 3, len(roles))
-		}
-		assert.True(t, playbook.ContainsRole("ruby"), "expected playbook to contain ruby role")
-		assert.True(t, playbook.ContainsRole("security/firewall"), "expected playbook to contain security/firewall role")
-		assert.True(t, playbook.ContainsRole("security/patches"), "expected playbook to contain security/patches role")
+		t.Run("host contains the roles for configuration", func(t *testing.T) {
+			roles := host.Roles
 
-		t.Run("parses tasks for role", func(t *testing.T) {
-			rubyRole, _ := playbook.FindRole("ruby")
+			expect.EqualFatal(t, len(roles), 3)
 
-			expectedNoOfTasks := 3
-			if len(rubyRole.Tasks) != expectedNoOfTasks {
-				t.Fatalf("Expected %d tasks but got %d", expectedNoOfTasks, len(rubyRole.Tasks))
-			}
+			assert.Equal(t, roles[0].Name, "security/firewall")
+			assert.Equal(t, roles[1].Name, "security/patches")
+			assert.Equal(t, roles[2].Name, "ruby")
+
+			t.Run("parse dependent roles", func(t *testing.T) {
+				role := roles[0]
+
+				assert.Equal(t, len(role.Tasks), 1)
+				assert.Equal(t, len(role.Variables), 1)
+			})
+
+			t.Run("parses tasks for role", func(t *testing.T) {
+				rubyRole := roles[2]
+
+				assert.Equal(t, len(rubyRole.Tasks), 3)
+			})
 		})
 	})
 }

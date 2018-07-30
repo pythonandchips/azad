@@ -26,6 +26,6 @@ type serverDescription struct {
 
 // Variable value
 type variableDescription struct {
-	Name    string `hcl:",label"`
-	Default string `hcl:"default"`
+	Name   string   `hcl:",label"`
+	Config hcl.Body `hcl:",remain"`
 }

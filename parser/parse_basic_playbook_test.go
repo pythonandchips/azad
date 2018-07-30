@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pythonandchips/azad/expect"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,41 +41,41 @@ func TestPlaybookFromFileBasic(t *testing.T) {
 
 	t.Run("returns the host configuration", func(t *testing.T) {
 		hosts := playbook.Hosts
-		if len(hosts) != 1 {
-			t.Fatalf("Expected %d hosts but got %d", 1, len(hosts))
-		}
+		expect.EqualFatal(t, len(hosts), 1)
 
 		host := hosts[0]
 		assert.Equal(t, host.ServerGroup, "tag_kibana_server")
-		if len(host.Roles) != 1 {
-			t.Fatalf("Expected host with %d roles but got %d", 1, len(host.Roles))
-		}
-		assert.Equal(t, host.Roles, []string{"elasticsearch"})
-	})
 
-	t.Run("returns the roles configuration", func(t *testing.T) {
-		roles := playbook.Roles
-		if len(roles) != 1 {
-			t.Fatalf("Expected %d roles but got %d", 1, len(roles))
-		}
-		role := playbook.Roles[0]
-		assert.Equal(t, role.Name, "elasticsearch")
-		assert.Equal(t, role.Dependents, []string{"java"})
+		expect.EqualFatal(t, len(host.Roles), 1)
 
-		t.Run("parses the tasks for the role", func(t *testing.T) {
-			tasks := role.Tasks
-			if len(tasks) != 2 {
-				t.Fatalf("Expected %d tasks for %s role but got %d", 1, role.Name, len(tasks))
-			}
+		expect.EqualFatal(t, len(host.Variables), 2)
+		assert.Equal(t, host.Variables["install_path"].AsString(), "/opt/installer")
 
-			task := role.Tasks[0]
-			assert.Equal(t, task.Type, "stat")
-			assert.Equal(t, task.Name, "ruby-exists")
+		t.Run("returns the roles configuration", func(t *testing.T) {
+			roles := host.Roles
 
-			assert.Equal(t, task.Attributes["path"].Name, "path")
-			t.Run("parse task with a conditional", func(t *testing.T) {
-				conditionalTask := role.Tasks[1]
-				assert.NotNil(t, conditionalTask.Condition)
+			expect.EqualFatal(t, len(roles), 1)
+
+			role := roles[0]
+			assert.Equal(t, role.Name, "elasticsearch")
+			expect.EqualFatal(t, len(role.Variables), 1)
+			assert.Equal(t, role.Variables["ruby_install_path"].AsString(), "/opt/installer/ruby")
+
+			t.Run("parses the tasks for the role", func(t *testing.T) {
+				tasks := role.Tasks
+				if len(tasks) != 2 {
+					t.Fatalf("Expected %d tasks for %s role but got %d", 1, role.Name, len(tasks))
+				}
+
+				task := role.Tasks[0]
+				assert.Equal(t, task.Type, "stat")
+				assert.Equal(t, task.Name, "ruby-exists")
+
+				assert.Equal(t, task.Attributes["path"].Name, "path")
+				t.Run("parse task with a conditional", func(t *testing.T) {
+					conditionalTask := role.Tasks[1]
+					assert.NotNil(t, conditionalTask.Condition)
+				})
 			})
 		})
 	})
