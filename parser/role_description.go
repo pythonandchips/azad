@@ -49,6 +49,7 @@ func (roleDescriptionGroups roleDescriptionGroups) ReplaceWith(role roleDescript
 type roleDescriptionGroup struct {
 	name  string
 	files []roleFile
+	path  string
 }
 
 func (roleDescriptionGroup roleDescriptionGroup) findFile(name string) (roleFile, error) {

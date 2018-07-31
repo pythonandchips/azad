@@ -57,7 +57,14 @@ func TestRunTask(t *testing.T) {
 				"other_task_value": testExpression("other_task_value", "${ previous_result.ok }"),
 			},
 		}
-		err := runTask(task, pluginTask, runner)
+		runTaskParams := runTaskParams{
+			task:       task,
+			taskSchema: pluginTask,
+			runner:     runner,
+			rootPath:   "/home/azad/root",
+			rolePath:   "/home/azad/root/roles/a_role",
+		}
+		err := runTask(runTaskParams)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}
@@ -69,6 +76,10 @@ func TestRunTask(t *testing.T) {
 		t.Run("adds the new variables to the runners variables", func(t *testing.T) {
 			_, ok := runner.taskResults["nil-task"]
 			assert.Equal(t, ok, true, "expected varaibles to contain %s", "nil-task")
+		})
+		t.Run("it sets the available file paths", func(t *testing.T) {
+			assert.Equal(t, suppliedContext.PlaybookRoot(), "/home/azad/root")
+			assert.Equal(t, suppliedContext.RoleRoot(), "/home/azad/root/roles/a_role")
 		})
 		t.Run("writes output to log", func(t *testing.T) {
 			expect.EqualFatal(t, len(testLogger.Lines), 2)
@@ -89,7 +100,12 @@ func TestRunTask(t *testing.T) {
 			Name:       "failing-task",
 			Attributes: map[string]*hcl.Attribute{},
 		}
-		err := runTask(failingTask, failingPluginTask, runner)
+		runTaskParams := runTaskParams{
+			task:       failingTask,
+			taskSchema: failingPluginTask,
+			runner:     runner,
+		}
+		err := runTask(runTaskParams)
 		if err == nil {
 			t.Fatalf("expected an error but got none")
 		}
@@ -113,7 +129,12 @@ func TestRunTask(t *testing.T) {
 			Attributes: map[string]*hcl.Attribute{},
 			Condition:  testExpression("condition", "${not(ruby-exists.exists)}"),
 		}
-		err := runTask(conditionalTask, conditionalPluginTask, runner)
+		runTaskParams := runTaskParams{
+			task:       conditionalTask,
+			taskSchema: conditionalPluginTask,
+			runner:     runner,
+		}
+		err := runTask(runTaskParams)
 		if err != nil {
 			t.Fatalf("unexpected error: %s", err)
 		}

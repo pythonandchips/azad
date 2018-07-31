@@ -11,10 +11,11 @@ import (
 
 func TestParseRolesPerFolder(t *testing.T) {
 	wd, _ := os.Getwd()
-	filePath := filepath.Join(wd, "fixtures", "roles_per_folder", "basic.az")
+	filePath := filepath.Join(wd, "fixtures", "roles_per_folder")
+	playbookPath := filepath.Join(filePath, "basic.az")
 	env := map[string]string{}
 
-	playbook, err := PlaybookFromFile(filePath, env)
+	playbook, err := PlaybookFromFile(playbookPath, env)
 
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
@@ -55,6 +56,8 @@ func TestParseRolesPerFolder(t *testing.T) {
 
 			t.Run("parse dependent roles", func(t *testing.T) {
 				role := roles[0]
+				rolePath := filepath.Join(filePath, "roles", "security", "firewall")
+				assert.Equal(t, role.Path, rolePath)
 
 				assert.Equal(t, len(role.Tasks), 1)
 				assert.Equal(t, len(role.Variables), 1)
@@ -62,6 +65,8 @@ func TestParseRolesPerFolder(t *testing.T) {
 
 			t.Run("parses tasks for role", func(t *testing.T) {
 				rubyRole := roles[2]
+				rolePath := filepath.Join(filePath, "roles", "ruby")
+				assert.Equal(t, rubyRole.Path, rolePath)
 
 				assert.Equal(t, len(rubyRole.Tasks), 3)
 			})

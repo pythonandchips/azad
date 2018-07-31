@@ -161,6 +161,7 @@ func createRoleDescriptionGroupFromFolder(rolesFolderPath, path string) (roleDes
 	}
 	roleDescriptionGroup := roleDescriptionGroup{
 		name: roleName,
+		path: path,
 	}
 	return roleDescriptionGroup, nil
 }

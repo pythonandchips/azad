@@ -5,10 +5,12 @@ import (
 )
 
 // NewContext create a new context for passing to a plugin to run a task
-func NewContext(vars map[string]string, conn conn.Conn) Context {
+func NewContext(vars map[string]string, conn conn.Conn, rootPath, rolePath string) Context {
 	return Context{
-		vars: vars,
-		conn: conn,
+		vars:     vars,
+		conn:     conn,
+		rootPath: rootPath,
+		rolePath: rolePath,
 	}
 }
 
@@ -21,11 +23,13 @@ func NewInventoryContext(vars map[string]string) Context {
 
 // Context for task run. Main representation of data for task run
 type Context struct {
-	conn   conn.Conn
-	vars   map[string]string
-	env    map[string]string
-	stdout string
-	stderr string
+	conn     conn.Conn
+	vars     map[string]string
+	env      map[string]string
+	stdout   string
+	stderr   string
+	rolePath string
+	rootPath string
 }
 
 // Run command against the ssh connection for the server
@@ -63,4 +67,14 @@ func (context Context) GetWithDefault(key, def string) string {
 		return def
 	}
 	return val
+}
+
+// PlaybookRoot absolute path to root of running playbook
+func (context Context) PlaybookRoot() string {
+	return context.rootPath
+}
+
+// RoleRoot absolute path to root of running role
+func (context Context) RoleRoot() string {
+	return context.rolePath
 }
