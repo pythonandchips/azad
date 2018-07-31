@@ -32,6 +32,7 @@ func unpackRole(
 	role := azad.Role{
 		Name:      roleDescriptionGroup.name,
 		Variables: map[string]cty.Value{},
+		Path:      roleDescriptionGroup.path,
 	}
 	err := unpackTasksForRole(
 		"main",

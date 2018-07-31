@@ -13,6 +13,7 @@ type Playbook struct {
 	Servers     []Server
 	Hosts       []Host
 	Variables   map[string]cty.Value
+	Path        string
 }
 
 // LookupServer lookup server
