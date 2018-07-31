@@ -67,6 +67,12 @@ func (context Context) Get(key string) string {
 	return context.vars[key]
 }
 
+// Exists check the key exists
+func (context Context) Exists(key string) bool {
+	_, ok := context.vars[key]
+	return ok
+}
+
 // GetWithDefault return value or supplied default
 func (context Context) GetWithDefault(key, def string) string {
 	val, ok := context.vars[key]
