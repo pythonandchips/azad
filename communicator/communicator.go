@@ -3,8 +3,10 @@ package communicator
 import (
 	"fmt"
 
+	"github.com/pythonandchips/azad/communicator/aptget"
 	"github.com/pythonandchips/azad/communicator/awsinventory"
 	"github.com/pythonandchips/azad/communicator/core"
+	"github.com/pythonandchips/azad/communicator/systemd"
 	"github.com/pythonandchips/azad/plugin"
 )
 
@@ -17,6 +19,10 @@ var getPlugin = func(pluginName string) (plugin.Schema, error) {
 			schemas[pluginName] = core.GetSchema()
 		case awsinventory.Name:
 			schemas[pluginName] = awsinventory.GetSchema()
+		case systemd.Name:
+			schemas[pluginName] = systemd.GetSchema()
+		case aptget.Name:
+			schemas[pluginName] = aptget.GetSchema()
 		default:
 			return plugin.Schema{}, fmt.Errorf("plugin %s not found", pluginName)
 		}

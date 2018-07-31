@@ -80,6 +80,12 @@ func (context taskContext) Get(key string) string {
 	return context.vars[key].AsString()
 }
 
+// Exists check the key exists
+func (context Context) Exists(key string) bool {
+	_, ok := context.vars[key]
+	return ok
+}
+
 // GetWithDefault return value or supplied default
 func (context taskContext) GetWithDefault(key, def string) string {
 	val, ok := context.vars[key]

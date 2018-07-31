@@ -1,4 +1,4 @@
-package core
+package aptget
 
 import "github.com/pythonandchips/azad/plugin"
 
@@ -6,16 +6,14 @@ import "github.com/pythonandchips/azad/plugin"
 //
 // Core is the default plugin and the plugin name can be omitted.
 // e.g. `core.bash` and `bash` will run the same task
-const Name = "core"
+const Name = "apt-get"
 
 // GetSchema returns the schema for the core plugin
 func GetSchema() plugin.Schema {
 	return plugin.Schema{
 		Tasks: map[string]plugin.Task{
-			"dir":      dirConfig(),
-			"shell":    shellConfig(),
-			"copy":     copyConfig(),
-			"template": templateConfig(),
+			"update":  updateConfig(),
+			"install": installConfig(),
 		},
 	}
 }
