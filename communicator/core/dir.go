@@ -19,21 +19,26 @@ func dirConfig() plugin.Task {
 
 func dir(context plugin.Context) (map[string]string, error) {
 	commands := []string{
+		checkDirExists(context.Get("path")),
 		fmt.Sprintf(`mkdir -p %s`, context.Get("path")),
 	}
 	if context.Exists("owner") {
 		owner := context.Get("owner")
 		commands = append(commands,
-			fmt.Sprintf("chown %s:%s",
+			fmt.Sprintf("chown %s:%s %s",
 				owner,
 				context.GetWithDefault("group", owner),
+				context.Get("path"),
 			),
 		)
 	}
 	command := plugin.Command{
-		Interpreter: "sh",
-		Command:     commands,
+		Command: commands,
 	}
 	err := context.Run(command)
 	return map[string]string{}, err
+}
+
+func checkDirExists(path string) string {
+	return fmt.Sprintf("if [ -d %s ]; then exit(0); fi", path)
 }
