@@ -5,10 +5,11 @@ import (
 )
 
 // NewContext create a new context for passing to a plugin to run a task
-func NewContext(vars map[string]string, conn conn.Conn, rootPath, rolePath string) Context {
+func NewContext(vars map[string]string, conn conn.Conn, user, rootPath, rolePath string) Context {
 	return Context{
 		vars:     vars,
 		conn:     conn,
+		user:     user,
 		rootPath: rootPath,
 		rolePath: rolePath,
 	}
@@ -26,6 +27,7 @@ type Context struct {
 	conn     conn.Conn
 	vars     map[string]string
 	env      map[string]string
+	user     string
 	stdout   string
 	stderr   string
 	rolePath string
@@ -37,12 +39,17 @@ func (context *Context) Run(command Command) error {
 	cmd := conn.Command{
 		Interpreter: command.Interpreter,
 		Command:     command.Command,
-		User:        command.User,
+		User:        context.user,
 	}
 	response, err := context.conn.Run(cmd)
 	context.stdout = response.Stdout()
 	context.stderr = response.Stderr()
 	return err
+}
+
+// User specified to run command
+func (context Context) User() string {
+	return context.user
 }
 
 // Stdout retrieve the result of stdout sent by the last run

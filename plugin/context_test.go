@@ -10,7 +10,6 @@ func TestContextRun(t *testing.T) {
 	command := Command{
 		Interpreter: "bash",
 		Command:     []string{"pwd"},
-		User:        "root",
 	}
 	response := FakeResponse{
 		stdout: "stdout",
@@ -25,6 +24,7 @@ func TestContextRun(t *testing.T) {
 		vars: map[string]string{
 			"variable": "value",
 		},
+		user: "root",
 	}
 
 	context.Run(command)
@@ -37,7 +37,7 @@ func TestContextRun(t *testing.T) {
 	t.Run("passes the command to be ran on connection", func(t *testing.T) {
 		assert.Equal(t, fakeConn.command.Interpreter, command.Interpreter)
 		assert.Equal(t, fakeConn.command.Command, command.Command)
-		assert.Equal(t, fakeConn.command.User, command.User)
+		assert.Equal(t, fakeConn.command.User, context.User())
 		assert.Equal(t, fakeConn.command.Env, command.Env)
 	})
 	t.Run("get variables for task", func(t *testing.T) {

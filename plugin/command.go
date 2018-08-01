@@ -8,6 +8,4 @@ type Command struct {
 	Command []string
 	// Additional environment variable to be used in the command
 	Env map[string]string
-	// User to run the command with e.g. root, admin
-	User string
 }
