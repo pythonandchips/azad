@@ -18,8 +18,12 @@ type Command struct {
 }
 
 func (command Command) generateFile() string {
+	interpreter := command.Interpreter
+	if interpreter == "" {
+		interpreter = "sh"
+	}
 	fileLines := []string{
-		fmt.Sprintf("#!/usr/bin/env %s", command.Interpreter),
+		fmt.Sprintf("#!/usr/bin/env %s", interpreter),
 		"",
 	}
 	for key, value := range command.Env {
