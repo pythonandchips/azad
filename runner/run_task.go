@@ -77,6 +77,7 @@ func runTask(runTaskParams runTaskParams) error {
 			return nil
 		}
 	}
+	userForTask := userForTask(runTaskParams.task, evalContext)
 	vars, err := varsForTask(runTaskParams.taskSchema.Fields, runTaskParams.task, evalContext)
 	if err != nil {
 		return err
@@ -84,6 +85,7 @@ func runTask(runTaskParams runTaskParams) error {
 	context := plugin.NewContext(
 		vars,
 		runTaskParams.conn(),
+		userForTask,
 		runTaskParams.rootPath,
 		runTaskParams.rolePath,
 	)
@@ -96,6 +98,18 @@ func runTask(runTaskParams runTaskParams) error {
 	runTaskParams.runner.setResult(runTaskParams.Name(), results)
 	logger.Info("Success %s:%s on %s", runTaskParams.logParmas()...)
 	return nil
+}
+
+func userForTask(task azad.Task, evalContext *hcl.EvalContext) string {
+	attr := task.Attributes["user"]
+	if attr == nil {
+		return ""
+	}
+	value, err := attr.Expr.Value(evalContext)
+	if err != nil {
+		return ""
+	}
+	return value.AsString()
 }
 
 func varsForTask(fields []plugin.Field, task azad.Task, evalContext *hcl.EvalContext) (map[string]string, error) {

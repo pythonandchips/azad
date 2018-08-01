@@ -52,6 +52,7 @@ func TestRunTask(t *testing.T) {
 			Type: "nil-task",
 			Name: "nil-task",
 			Attributes: map[string]*hcl.Attribute{
+				"user":             testExpression("user", "root"),
 				"static_value":     testExpression("static_value", "value"),
 				"dynamic_value":    testExpression("dynamic_value", "${ var.dynamic_value }"),
 				"other_task_value": testExpression("other_task_value", "${ previous_result.ok }"),
@@ -72,6 +73,7 @@ func TestRunTask(t *testing.T) {
 			assert.Equal(t, suppliedContext.Get("static_value"), "value")
 			assert.Equal(t, suppliedContext.Get("dynamic_value"), "dvalue")
 			assert.Equal(t, suppliedContext.Get("other_task_value"), "ok")
+			assert.Equal(t, suppliedContext.User(), "root")
 		})
 		t.Run("adds the new variables to the runners variables", func(t *testing.T) {
 			_, ok := runner.taskResults["nil-task"]
