@@ -40,5 +40,5 @@ func dir(context plugin.Context) (map[string]string, error) {
 }
 
 func checkDirExists(path string) string {
-	return fmt.Sprintf("if [ -d %s ]; then exit(0); fi", path)
+	return fmt.Sprintf("if [ -d %s ]; then exit 0; fi", path)
 }

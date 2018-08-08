@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"os/user"
 	"path/filepath"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -18,5 +19,10 @@ func DefaultSSHKeyPath() string {
 //
 // root
 func DefaultUser() string {
-	return "root"
+	user, _ := currentUser()
+	return user.Username
+}
+
+var currentUser = func() (*user.User, error) {
+	return user.Current()
 }

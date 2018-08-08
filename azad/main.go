@@ -33,7 +33,7 @@ func flags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
 			Name:  "user, u",
-			Value: "root",
+			Value: conn.DefaultUser(),
 			Usage: "user for ssh connection",
 		},
 		cli.StringFlag{

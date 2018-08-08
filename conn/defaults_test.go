@@ -1,6 +1,7 @@
 package conn
 
 import (
+	"os/user"
 	"testing"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -14,5 +15,11 @@ func TestDefaultSSHKeyPath(t *testing.T) {
 }
 
 func TestDefaultUser(t *testing.T) {
-	assert.Equal(t, DefaultUser(), "root")
+	currentUser = func() (*user.User, error) {
+		return &user.User{
+			Username: "bruce_springsteen",
+		}, nil
+	}
+
+	assert.Equal(t, DefaultUser(), "bruce_springsteen")
 }

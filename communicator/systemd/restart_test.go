@@ -20,7 +20,7 @@ func TestRestart(t *testing.T) {
 
 			command := fakeContext.CommandRan()
 			expect.EqualFatal(t, len(command.Command), 1)
-			assert.Equal(t, command.Command[0], `systemd restart networking`)
+			assert.Equal(t, command.Command[0], `systemctl restart networking`)
 		})
 	})
 }
