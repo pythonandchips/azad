@@ -11,13 +11,12 @@ func installConfig() plugin.Task {
 		Fields: []plugin.Field{
 			{Name: "package", Type: "String", Required: true},
 		},
-		Run: install,
+		Run: installCommand,
 	}
 }
 
-func install(context plugin.Context) (map[string]string, error) {
+func installCommand(context plugin.Context) (map[string]string, error) {
 	command := plugin.Command{
-		Interpreter: "sh",
 		Command: []string{
 			fmt.Sprintf("apt-get install -yq %s", context.Get("package")),
 		},

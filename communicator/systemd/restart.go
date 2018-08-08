@@ -11,14 +11,13 @@ func restartConfig() plugin.Task {
 		Fields: []plugin.Field{
 			{Name: "service", Type: "String", Required: true},
 		},
-		Run: restart,
+		Run: restartCommand,
 	}
 }
 
 // Restart a systemd process
-func restart(context plugin.Context) (map[string]string, error) {
+func restartCommand(context plugin.Context) (map[string]string, error) {
 	command := plugin.Command{
-		Interpreter: "sh",
 		Command: []string{
 			fmt.Sprintf("systemd restart %s", context.Get("service")),
 		},
