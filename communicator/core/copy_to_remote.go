@@ -6,28 +6,30 @@ import (
 	"path/filepath"
 
 	"github.com/pythonandchips/azad/plugin"
+	"github.com/pythonandchips/azad/plugin/helpers"
 )
 
-func copyConfig() plugin.Task {
+func copyToRemoteConfig() plugin.Task {
 	return plugin.Task{
 		Fields: []plugin.Field{
 			{Name: "source", Type: "String", Required: true},
 			{Name: "dest", Type: "String", Required: true},
 			{Name: "mode", Type: "String", Required: false},
 		},
-		Run: copyCommand,
+		Run: copyToRemoteCommand,
 	}
 }
 
-func copyCommand(context plugin.Context) (map[string]string, error) {
+func copyToRemoteCommand(context plugin.Context) (map[string]string, error) {
 	templatePath := filepath.Join(context.RolePath(), "files", context.Get("source"))
-	data, _ := ioutil.ReadFile(templatePath)
-	commands := []string{
-		"filecont=<<- HEREDOC",
-		string(data),
-		"HEREDOC",
-		fmt.Sprintf("echo $filecount > %s", context.Get("dest")),
+	data, err := ioutil.ReadFile(templatePath)
+	if err != nil {
+		return map[string]string{}, err
 	}
+	commands := []string{}
+	commands = append(commands, helpers.Checksum(data, context.Get("dest"))...)
+	commands = append(commands, helpers.WriteEncodedFile(data, context.Get("dest"))...)
+
 	if context.Exists("mode") {
 		commands = append(
 			commands,
@@ -35,9 +37,8 @@ func copyCommand(context plugin.Context) (map[string]string, error) {
 		)
 	}
 	command := plugin.Command{
-		Interpreter: "sh",
-		Command:     commands,
+		Command: commands,
 	}
-	err := context.Run(command)
+	err = context.Run(command)
 	return map[string]string{}, err
 }

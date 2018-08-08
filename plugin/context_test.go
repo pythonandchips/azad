@@ -7,7 +7,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func TestContextRun(t *testing.T) {
+func TestServerContextRun(t *testing.T) {
 	command := Command{
 		Interpreter: "bash",
 		Command:     []string{"pwd"},
@@ -17,7 +17,7 @@ func TestContextRun(t *testing.T) {
 		stderr: "stderr",
 	}
 	fakeConn := &FakeConn{response: response}
-	context := taskContext{
+	context := serverContext{
 		conn: fakeConn,
 		env: map[string]string{
 			"env": "dev",

@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/pythonandchips/azad/plugin"
+	plugintesting "github.com/pythonandchips/azad/plugin/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -33,7 +34,7 @@ func TestListEC2Resources(t *testing.T) {
 		return fakeEC2
 	}
 	t.Run("with basic configuration", func(t *testing.T) {
-		context := &plugin.FakeContext{}
+		context := plugintesting.NewFakeContext()
 
 		resources, err := ec2Resources(context)
 		if err != nil {

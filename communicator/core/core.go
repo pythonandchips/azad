@@ -12,10 +12,10 @@ const Name = "core"
 func GetSchema() plugin.Schema {
 	return plugin.Schema{
 		Tasks: map[string]plugin.Task{
-			"dir":      dirConfig(),
-			"shell":    shellConfig(),
-			"copy":     copyConfig(),
-			"template": templateConfig(),
+			"dir":            dirConfig(),
+			"shell":          shellConfig(),
+			"copy-to-remote": copyToRemoteConfig(),
+			"template":       templateConfig(),
 		},
 	}
 }

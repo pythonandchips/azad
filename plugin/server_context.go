@@ -1,11 +1,14 @@
 package plugin
 
-import "github.com/pythonandchips/azad/conn"
+import (
+	"github.com/pythonandchips/azad/conn"
+	"github.com/zclconf/go-cty/cty"
+)
 
 // ServerContext for task run. Main representation of data for task run
 type serverContext struct {
 	conn     conn.Conn
-	vars     map[string]string
+	vars     map[string]cty.Value
 	env      map[string]string
 	user     string
 	stdout   string
@@ -27,6 +30,10 @@ func (context *serverContext) Run(command Command) error {
 	return err
 }
 
+func (context serverContext) User() string {
+	return context.user
+}
+
 // Stdout retrieve the result of stdout sent by the last run
 func (context serverContext) Stdout() string {
 	return context.stdout
@@ -39,7 +46,7 @@ func (context serverContext) Stderr() string {
 
 // Get the configuration value for the task
 func (context serverContext) Get(key string) string {
-	return context.vars[key]
+	return context.vars[key].AsString()
 }
 
 // Exists check the key exists
@@ -49,7 +56,7 @@ func (context serverContext) Exists(key string) bool {
 }
 
 // Variables raw variables for context
-func (context serverContext) Variables() map[string]string {
+func (context serverContext) Variables() map[string]cty.Value {
 	return context.vars
 }
 
@@ -59,7 +66,7 @@ func (context serverContext) GetWithDefault(key, def string) string {
 	if !ok {
 		return def
 	}
-	return val
+	return val.AsString()
 }
 
 // PlaybookPath absolute path to root of running playbook
