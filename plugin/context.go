@@ -27,6 +27,7 @@ type Context interface {
 	Run(Command) error
 	Stdout() string
 	Stderr() string
+	User() string
 	Get(string) string
 	Exists(string) bool
 	Variables() map[string]string

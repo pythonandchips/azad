@@ -8,6 +8,7 @@ import (
 type FakeContext struct {
 	vars       map[string]string
 	env        map[string]string
+	user       string
 	stdout     string
 	stderr     string
 	rolePath   string
@@ -32,6 +33,11 @@ func (context *FakeContext) SetVars(vars map[string]string) {
 	context.vars = vars
 }
 
+// SetRolePath for the fake context
+func (context *FakeContext) SetRolePath(rolePath string) {
+	context.rolePath = rolePath
+}
+
 // Run command against a fake connection
 func (context *FakeContext) Run(command plugin.Command) error {
 	context.ranCommand = command
@@ -41,6 +47,11 @@ func (context *FakeContext) Run(command plugin.Command) error {
 // Stdout retrieve the result of stdout sent by the last run
 func (context FakeContext) Stdout() string {
 	return context.stdout
+}
+
+// User to run command with
+func (context FakeContext) User() string {
+	return context.user
 }
 
 // Stderr retrieve the result of stdout sent by the last run

@@ -80,8 +80,8 @@ func TestRunTask(t *testing.T) {
 			assert.Equal(t, ok, true, "expected varaibles to contain %s", "nil-task")
 		})
 		t.Run("it sets the available file paths", func(t *testing.T) {
-			assert.Equal(t, suppliedContext.PlaybookRoot(), "/home/azad/root")
-			assert.Equal(t, suppliedContext.RoleRoot(), "/home/azad/root/roles/a_role")
+			assert.Equal(t, suppliedContext.PlaybookPath(), "/home/azad/root")
+			assert.Equal(t, suppliedContext.RolePath(), "/home/azad/root/roles/a_role")
 		})
 		t.Run("writes output to log", func(t *testing.T) {
 			expect.EqualFatal(t, len(testLogger.Lines), 2)

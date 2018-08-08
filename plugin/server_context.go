@@ -27,6 +27,10 @@ func (context *serverContext) Run(command Command) error {
 	return err
 }
 
+func (context serverContext) User() string {
+	return context.user
+}
+
 // Stdout retrieve the result of stdout sent by the last run
 func (context serverContext) Stdout() string {
 	return context.stdout
