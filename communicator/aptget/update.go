@@ -9,11 +9,11 @@ import (
 func updateConfig() plugin.Task {
 	return plugin.Task{
 		Fields: []plugin.Field{},
-		Run:    update,
+		Run:    updateCommand,
 	}
 }
 
-func update(context plugin.Context) (map[string]string, error) {
+func updateCommand(context plugin.Context) (map[string]string, error) {
 	command := plugin.Command{
 		Interpreter: "sh",
 		Command: []string{
