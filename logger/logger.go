@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -67,6 +68,14 @@ func Warn(line string, params ...interface{}) {
 // Error log to error level
 func Error(line string, params ...interface{}) {
 	err.Printf(line+"\n", params...)
+}
+
+// LogDuration of function for benchmarking
+func LogDuration(message string, callback func()) {
+	now := time.Now()
+	callback()
+	duration := time.Now().Sub(now)
+	debug.Printf("%s took %s", message, duration)
 }
 
 func ErrorAndExit(line string, params ...interface{}) {
