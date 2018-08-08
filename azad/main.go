@@ -23,6 +23,7 @@ func main() {
 func app() *cli.App {
 	app := cli.NewApp()
 	app.Name = "Azad: Server Configuration Management"
+	app.Version = "0.0.1"
 	app.Flags = flags()
 	app.Action = actionHander(runPlaybook)
 	return app
