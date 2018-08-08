@@ -19,7 +19,7 @@ func restartConfig() plugin.Task {
 func restartCommand(context plugin.Context) (map[string]string, error) {
 	command := plugin.Command{
 		Command: []string{
-			fmt.Sprintf("systemd restart %s", context.Get("service")),
+			fmt.Sprintf("systemctl restart %s", context.Get("service")),
 		},
 	}
 	err := context.Run(command)

@@ -13,7 +13,7 @@ func Checksum(data []byte, path string) []string {
 	checksum := sha1.Sum(data)
 	return []string{
 		fmt.Sprintf(`echo "%x %s" | sha1sum -c -`, checksum, path),
-		`if [ $? = 0 ]; then exit(40); if`,
+		`if [ $? = 0 ]; then exit 40; fi`,
 	}
 }
 

@@ -20,7 +20,7 @@ func TestDir(t *testing.T) {
 
 			command := fakeContext.CommandRan()
 			expect.EqualFatal(t, len(command.Command), 2)
-			assert.Equal(t, command.Command[0], "if [ -d /home/he-man ]; then exit(0); fi")
+			assert.Equal(t, command.Command[0], "if [ -d /home/he-man ]; then exit 0; fi")
 			assert.Equal(t, command.Command[1], "mkdir -p /home/he-man")
 		})
 
@@ -35,7 +35,7 @@ func TestDir(t *testing.T) {
 
 			command := fakeContext.CommandRan()
 			expect.EqualFatal(t, len(command.Command), 3)
-			assert.Equal(t, command.Command[0], "if [ -d /home/he-man ]; then exit(0); fi")
+			assert.Equal(t, command.Command[0], "if [ -d /home/he-man ]; then exit 0; fi")
 			assert.Equal(t, command.Command[1], "mkdir -p /home/he-man")
 			assert.Equal(t, command.Command[2], "chown heman:heman /home/he-man")
 		})
@@ -52,7 +52,7 @@ func TestDir(t *testing.T) {
 
 			command := fakeContext.CommandRan()
 			expect.EqualFatal(t, len(command.Command), 3)
-			assert.Equal(t, command.Command[0], "if [ -d /home/he-man ]; then exit(0); fi")
+			assert.Equal(t, command.Command[0], "if [ -d /home/he-man ]; then exit 0; fi")
 			assert.Equal(t, command.Command[1], "mkdir -p /home/he-man")
 			assert.Equal(t, command.Command[2], "chown heman:grayskull /home/he-man")
 		})
