@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+cd cli
+
+go build -o azad
+
+cp ./azad $GOPATH/bin
