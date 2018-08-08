@@ -1,6 +1,8 @@
 package runner
 
 import (
+	"time"
+
 	"github.com/pythonandchips/azad/azad"
 	"github.com/pythonandchips/azad/communicator"
 	"github.com/pythonandchips/azad/logger"
@@ -8,6 +10,10 @@ import (
 )
 
 var config azad.Config
+
+var now = func() time.Time {
+	return time.Now()
+}
 
 // RunPlaybook run the playbook
 var RunPlaybook = func(playbookFilePath string, globalConfig azad.Config) {
