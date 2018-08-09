@@ -26,4 +26,5 @@ type Role struct {
 	Tasks      Tasks
 	Variables  map[string]cty.Value
 	Path       string
+	User       string
 }

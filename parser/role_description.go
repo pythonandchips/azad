@@ -72,6 +72,7 @@ type roleDescriptions []roleDescription
 type roleDescription struct {
 	Name       string                `hcl:",label"`
 	Dependents []string              `hcl:"dependents,optional"`
+	User       string                `hcl:"user,optional"`
 	Variables  []variableDescription `hcl:"variable,block"`
 	Config     hcl.Body              `hcl:",remain"`
 }

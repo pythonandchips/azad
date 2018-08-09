@@ -15,7 +15,6 @@ import (
 )
 
 func TestRunTask(t *testing.T) {
-	var suppliedContext plugin.Context
 	runner := &runner{
 		Address: "10.0.0.1",
 		taskResults: map[string]taskResult{
@@ -34,6 +33,7 @@ func TestRunTask(t *testing.T) {
 		},
 	}
 	t.Run("with a successful task", func(t *testing.T) {
+		var suppliedContext plugin.Context
 		testLogger := logger.TestLogger()
 		pluginTask := plugin.Task{
 			Fields: []plugin.Field{
@@ -143,6 +143,33 @@ func TestRunTask(t *testing.T) {
 		assert.Equal(t, taskHasRan, false)
 		assert.Equal(t, testLogger.Lines[0], "INFO: Applying conditional-task:conditional-task on 10.0.0.1\n")
 		assert.Equal(t, testLogger.Lines[1], "INFO: Skipping conditional-task:conditional-task on 10.0.0.1, condition failed\n")
+	})
+	t.Run("users role user if task does not specify user", func(t *testing.T) {
+		var suppliedContext plugin.Context
+		logger.TestLogger()
+		pluginTask := plugin.Task{
+			Fields: []plugin.Field{},
+			Run: func(context plugin.Context) (map[string]string, error) {
+				suppliedContext = context
+				return map[string]string{}, nil
+			},
+		}
+		task := azad.Task{
+			Type:       "task",
+			Name:       "task",
+			Attributes: map[string]*hcl.Attribute{},
+		}
+		runTaskParams := runTaskParams{
+			task:       task,
+			taskSchema: pluginTask,
+			runner:     runner,
+			user:       "faraday",
+		}
+		err := runTask(runTaskParams)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		assert.Equal(t, suppliedContext.User(), "faraday")
 	})
 }
 

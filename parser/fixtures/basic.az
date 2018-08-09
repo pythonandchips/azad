@@ -27,6 +27,8 @@ host "tag_kibana_server" {
 }
 
 role "elasticsearch" {
+  user = "root"
+
   variable "ruby_install_path" {
     default = "${var.install_path}/ruby"
   }

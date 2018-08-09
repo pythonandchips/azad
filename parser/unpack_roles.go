@@ -58,6 +58,10 @@ func unpackTasksForRole(
 		return fmt.Errorf("cannot find main file for role %s", roleDescriptionGroup.name)
 	}
 	roleDescription := mainFile.roleDescription
+	user := roleDescription.User
+	if role.User == "" {
+		role.User = user
+	}
 	dependents := roleDescription.Dependents
 	variables, err := unpackVariables(roleDescription.Variables, roleContext)
 	if err != nil {

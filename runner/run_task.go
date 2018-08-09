@@ -18,6 +18,7 @@ type runTaskParams struct {
 	runner     *runner
 	rootPath   string
 	rolePath   string
+	user       string
 }
 
 func (runTaskParams runTaskParams) Type() string {
@@ -78,6 +79,9 @@ func runTask(runTaskParams runTaskParams) error {
 		}
 	}
 	userForTask := userForTask(runTaskParams.task, evalContext)
+	if userForTask == "" {
+		userForTask = runTaskParams.user
+	}
 	vars, err := varsForTask(runTaskParams.taskSchema.Fields, runTaskParams.task, evalContext)
 	if err != nil {
 		return err

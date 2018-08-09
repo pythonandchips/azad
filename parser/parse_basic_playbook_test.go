@@ -58,6 +58,7 @@ func TestPlaybookFromFileBasic(t *testing.T) {
 
 			role := roles[0]
 			assert.Equal(t, role.Name, "elasticsearch")
+			assert.Equal(t, role.User, "root")
 			expect.EqualFatal(t, len(role.Variables), 1)
 			assert.Equal(t, role.Variables["ruby_install_path"].AsString(), "/opt/installer/ruby")
 
