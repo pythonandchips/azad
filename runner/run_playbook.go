@@ -42,14 +42,14 @@ var RunPlaybook = func(playbookFilePath string, globalConfig azad.Config) {
 			return
 		}
 		for _, role := range host.Roles {
-			runTasks(role.Tasks, runners.ChildRunners(role.Variables), role.Path, playbook.Path)
+			runTasks(role, runners.ChildRunners(role.Variables), playbook.Path)
 			logger.Info("Finished Applying %s", host.ServerGroup)
 		}
 	}
 }
 
-func runTasks(tasks azad.Tasks, runners runners, rootPath, rolePath string) error {
-	for _, task := range tasks {
+func runTasks(role azad.Role, runners runners, rootPath string) error {
+	for _, task := range role.Tasks {
 		taskSchema, _ := communicator.GetTask(task.PluginName(), task.TaskName())
 		for _, runner := range runners {
 			runTaskParams := runTaskParams{
@@ -57,7 +57,8 @@ func runTasks(tasks azad.Tasks, runners runners, rootPath, rolePath string) erro
 				taskSchema: taskSchema,
 				runner:     runner,
 				rootPath:   rootPath,
-				rolePath:   rolePath,
+				rolePath:   role.Path,
+				user:       role.User,
 			}
 			runTask(runTaskParams)
 		}
