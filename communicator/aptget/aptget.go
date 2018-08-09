@@ -12,8 +12,9 @@ const Name = "apt-get"
 func GetSchema() plugin.Schema {
 	return plugin.Schema{
 		Tasks: map[string]plugin.Task{
-			"update":  updateConfig(),
-			"install": installConfig(),
+			"update":   updateConfig(),
+			"install":  installConfig(),
+			"add-repo": addRepoConfig(),
 		},
 	}
 }
