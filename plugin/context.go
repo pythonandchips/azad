@@ -35,4 +35,5 @@ type Context interface {
 	GetWithDefault(string, string) string
 	PlaybookPath() string
 	RolePath() string
+	IsTrue(string) bool
 }

@@ -93,3 +93,8 @@ func (context FakeContext) PlaybookPath() string {
 func (context FakeContext) RolePath() string {
 	return context.rolePath
 }
+
+// IsTrue checks if key exists and matches "true"
+func (context FakeContext) IsTrue(key string) bool {
+	return context.Get(key) == "true"
+}

@@ -1,4 +1,4 @@
-package core
+package ipset
 
 import "github.com/pythonandchips/azad/plugin"
 
@@ -6,17 +6,15 @@ import "github.com/pythonandchips/azad/plugin"
 //
 // Core is the default plugin and the plugin name can be omitted.
 // e.g. `core.bash` and `bash` will run the same task
-const Name = "core"
+const Name = "ipset"
 
-// GetSchema returns the schema for the core plugin
+// GetSchema returns the schema for the ipset plugin
 func GetSchema() plugin.Schema {
 	return plugin.Schema{
 		Tasks: map[string]plugin.Task{
-			"dir":            dirConfig(),
-			"shell":          shellConfig(),
-			"copy-to-remote": copyToRemoteConfig(),
-			"template":       templateConfig(),
-			"remove-file":    removeFileConfig(),
+			"create":    createConfig(),
+			"open-port": openPortConfig(),
+			"save":      saveConfig(),
 		},
 	}
 }

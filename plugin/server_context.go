@@ -78,3 +78,7 @@ func (context serverContext) PlaybookPath() string {
 func (context serverContext) RolePath() string {
 	return context.rolePath
 }
+
+func (context serverContext) IsTrue(key string) bool {
+	return context.Get(key) == "true"
+}
