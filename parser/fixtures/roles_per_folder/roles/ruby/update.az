@@ -1,0 +1,3 @@
+task "apt-get" "install elasticsearch" {
+  pgk = "libv8"
+}

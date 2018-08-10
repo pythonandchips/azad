@@ -75,12 +75,15 @@ func unpackTasksForRole(
 	errors := &multierror.Error{}
 	for _, block := range content.Blocks {
 		switch block.Type {
-		case "include":
-			include := unpackInclude(block, roleContext)
-			err := unpackTasksForRole(include, roleDescriptionGroup, roleContext, role)
+		case "includes":
+			err := unpackTaskBlock(
+				block,
+				roleContext,
+				roleDescriptionGroup,
+				role,
+			)
 			if err != nil {
 				errors = multierror.Append(errors, err)
-				continue
 			}
 		case "task":
 			task, _ := unpackTask(block, roleContext)
@@ -91,6 +94,31 @@ func unpackTasksForRole(
 	}
 	role.Dependents = append(role.Dependents, dependents...)
 	role.Variables = mergeMap(role.Variables, variables)
+	return errors.ErrorOrNil()
+}
+
+func unpackTaskBlock(block *hcl.Block, roleContext *hcl.EvalContext, roleDescriptionGroup roleDescriptionGroup, role *azad.Role) error {
+	switch block.Type {
+	case "includes":
+		includes, err := unpackIncludeMany(block, roleContext)
+		if err != nil {
+			return err
+		}
+		err = includeFilesInRole(
+			includes,
+			roleDescriptionGroup,
+			roleContext,
+			role,
+		)
+		if err != nil {
+			return err
+		}
+	case "task":
+		task, _ := unpackTask(block, roleContext)
+		role.Tasks = append(role.Tasks, task)
+	default:
+		return fmt.Errorf("unrecognized block %s in %s", block.Type, roleDescriptionGroup.name)
+	}
 	return nil
 }
 
@@ -101,14 +129,45 @@ func mergeMap(existing, new map[string]cty.Value) map[string]cty.Value {
 	return existing
 }
 
-func unpackInclude(body *hcl.Block, evalContext *hcl.EvalContext) string {
-	attributes := map[string]string{}
-	attributesList, _ := body.Body.JustAttributes()
-	for _, attr := range attributesList {
-		value, _ := attr.Expr.Value(evalContext)
-		attributes[attr.Name] = value.AsString()
+func includeFilesInRole(
+	includes []string,
+	roleDescriptionGroup roleDescriptionGroup,
+	roleContext *hcl.EvalContext,
+	role *azad.Role,
+) error {
+	errors := &multierror.Error{}
+	for _, include := range includes {
+		err := unpackTasksForRole(include, roleDescriptionGroup, roleContext, role)
+		if err != nil {
+			errors = multierror.Append(errors, err)
+			continue
+		}
 	}
-	return attributes["path"]
+	return errors.ErrorOrNil()
+}
+
+func unpackIncludeMany(body *hcl.Block, evalContext *hcl.EvalContext) ([]string, error) {
+	paths := []string{}
+	attributesList, _ := body.Body.JustAttributes()
+	pathAttribute, err := attributeFromList(attributesList, "paths")
+	if err != nil {
+		return paths, err
+	}
+	values, _ := pathAttribute.Expr.Value(evalContext)
+	for _, value := range values.AsValueSlice() {
+		paths = append(paths, value.AsString())
+	}
+	return paths, nil
+}
+
+func attributeFromList(attributeList hcl.Attributes, name string) (*hcl.Attribute, error) {
+	for _, attr := range attributeList {
+		if attr.Name == name {
+			return attr, nil
+		}
+	}
+	return nil, fmt.Errorf("Missing required attribute %s", name)
+
 }
 
 func unpackTask(body *hcl.Block, evalContext *hcl.EvalContext) (azad.Task, error) {
@@ -132,7 +191,7 @@ func unpackTask(body *hcl.Block, evalContext *hcl.EvalContext) (azad.Task, error
 func roleSchema() hcl.BodySchema {
 	roleSchema := hcl.BodySchema{
 		Blocks: []hcl.BlockHeaderSchema{
-			{Type: "include"},
+			{Type: "includes"},
 			{Type: "task", LabelNames: []string{"command", "label"}},
 			{Type: "variable", LabelNames: []string{"name"}},
 		},

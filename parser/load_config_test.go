@@ -23,10 +23,11 @@ func TestParseRoleConfig(t *testing.T) {
 	assert.Equal(t, roleDescription.Name, "main")
 	roleSchema := roleSchema()
 	content, err := roleDescription.Config.Content(&roleSchema)
-	if len(content.Blocks) != 3 {
+	if len(content.Blocks) != 4 {
 		t.Fatalf("expected 3 content blocks but got %d", len(content.Blocks))
 	}
 	assert.Equal(t, content.Blocks[0].Type, "task")
-	assert.Equal(t, content.Blocks[1].Type, "include")
+	assert.Equal(t, content.Blocks[1].Type, "includes")
 	assert.Equal(t, content.Blocks[2].Type, "task")
+	assert.Equal(t, content.Blocks[3].Type, "includes")
 }

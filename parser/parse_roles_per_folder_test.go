@@ -68,7 +68,20 @@ func TestParseRolesPerFolder(t *testing.T) {
 				rolePath := filepath.Join(filePath, "roles", "ruby")
 				assert.Equal(t, rubyRole.Path, rolePath)
 
-				assert.Equal(t, len(rubyRole.Tasks), 3)
+				assert.Equal(t, len(rubyRole.Tasks), 5)
+
+				taskNames := []string{}
+				for _, task := range rubyRole.Tasks {
+					taskNames = append(taskNames, task.Name)
+				}
+				expectedTaskNames := []string{
+					"update apt get",
+					"install nginx",
+					"install ruby",
+					"install elasticsearch",
+					"install gems",
+				}
+				assert.Equal(t, taskNames, expectedTaskNames)
 			})
 		})
 	})
