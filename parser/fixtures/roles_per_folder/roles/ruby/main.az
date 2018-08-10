@@ -8,10 +8,17 @@ task "apt-get.update" "update apt get" {
   user = "root"
 }
 
-include {
-  path = "dependencies"
+includes {
+  paths = ["dependencies"]
 }
 
 task "apt-get" "install ruby" {
   pgk = "libv8"
+}
+
+includes {
+  paths = [
+    "update",
+    "install",
+  ]
 }
