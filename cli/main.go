@@ -23,6 +23,7 @@ func main() {
 func app() *cli.App {
 	app := cli.NewApp()
 	app.Name = "Azad: Server Configuration Management"
+	app.Version = "0.0.1"
 	app.Flags = flags()
 	app.Action = actionHander(runPlaybook)
 	return app
@@ -32,7 +33,7 @@ func flags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
 			Name:  "user, u",
-			Value: "root",
+			Value: conn.DefaultUser(),
 			Usage: "user for ssh connection",
 		},
 		cli.StringFlag{

@@ -53,7 +53,7 @@ func (runTaskParams runTaskParams) run(context plugin.Context) (map[string]strin
 	return runTaskParams.taskSchema.Run(context)
 }
 
-func (runTaskParams runTaskParams) logParmas() []interface{} {
+func (runTaskParams runTaskParams) logParams() []interface{} {
 	return []interface{}{
 		runTaskParams.Type(),
 		runTaskParams.Name(),
@@ -62,7 +62,7 @@ func (runTaskParams runTaskParams) logParmas() []interface{} {
 }
 
 func runTask(runTaskParams runTaskParams) error {
-	logger.Info("Applying %s:%s on %s", runTaskParams.logParmas()...)
+	logger.Info("Applying %s:%s on %s", runTaskParams.logParams()...)
 	evalContext := &hcl.EvalContext{
 		Variables: runTaskParams.toContext(),
 		Functions: stdFunctions(),
@@ -70,11 +70,11 @@ func runTask(runTaskParams runTaskParams) error {
 	if runTaskParams.task.Condition != nil {
 		result, err := runTaskParams.conditionResult(evalContext)
 		if err != nil {
-			logger.Error("Error evaluating conditional %s:%s on %s: %s", runTaskParams.logParmas()...)
+			logger.Error("Error evaluating conditional %s:%s on %s: %s", runTaskParams.logParams()...)
 			return err
 		}
 		if result.True() {
-			logger.Info("Skipping %s:%s on %s, condition failed", runTaskParams.logParmas()...)
+			logger.Info("Skipping %s:%s on %s, condition failed", runTaskParams.logParams()...)
 			return nil
 		}
 	}
@@ -93,14 +93,16 @@ func runTask(runTaskParams runTaskParams) error {
 		runTaskParams.rootPath,
 		runTaskParams.rolePath,
 	)
+	refTime := now()
 	results, err := runTaskParams.run(context)
+	logParams := append(runTaskParams.logParams(), now().Sub(refTime))
 	if err != nil {
-		logger.Error("Failed %s:%s on %s", runTaskParams.logParmas()...)
+		logger.Error("Failed %s:%s on %s took %s", logParams...)
 		logger.Error("Error: %s", err)
 		return err
 	}
 	runTaskParams.runner.setResult(runTaskParams.Name(), results)
-	logger.Info("Success %s:%s on %s", runTaskParams.logParmas()...)
+	logger.Info("Success %s:%s on %s took %s", logParams...)
 	return nil
 }
 

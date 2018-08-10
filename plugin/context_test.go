@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestContextRun(t *testing.T) {
+func TestServerContextRun(t *testing.T) {
 	command := Command{
 		Interpreter: "bash",
 		Command:     []string{"pwd"},
@@ -16,7 +16,7 @@ func TestContextRun(t *testing.T) {
 		stderr: "stderr",
 	}
 	fakeConn := &FakeConn{response: response}
-	context := Context{
+	context := serverContext{
 		conn: fakeConn,
 		env: map[string]string{
 			"env": "dev",

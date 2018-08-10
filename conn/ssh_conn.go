@@ -37,7 +37,6 @@ func (sshConn *SSHConn) ConnectTo(ip string) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse private key: %v", err)
 	}
-
 	config := &ssh.ClientConfig{
 		User: sshConn.config.User,
 		Auth: []ssh.AuthMethod{

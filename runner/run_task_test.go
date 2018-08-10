@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hcl/hclsyntax"
@@ -15,6 +16,9 @@ import (
 )
 
 func TestRunTask(t *testing.T) {
+	now = func() time.Time {
+		return time.Date(2018, 1, 2, 3, 4, 5, 6, time.UTC)
+	}
 	runner := &runner{
 		Address: "10.0.0.1",
 		taskResults: map[string]taskResult{
@@ -80,13 +84,13 @@ func TestRunTask(t *testing.T) {
 			assert.Equal(t, ok, true, "expected varaibles to contain %s", "nil-task")
 		})
 		t.Run("it sets the available file paths", func(t *testing.T) {
-			assert.Equal(t, suppliedContext.PlaybookRoot(), "/home/azad/root")
-			assert.Equal(t, suppliedContext.RoleRoot(), "/home/azad/root/roles/a_role")
+			assert.Equal(t, suppliedContext.PlaybookPath(), "/home/azad/root")
+			assert.Equal(t, suppliedContext.RolePath(), "/home/azad/root/roles/a_role")
 		})
 		t.Run("writes output to log", func(t *testing.T) {
 			expect.EqualFatal(t, len(testLogger.Lines), 2)
 			assert.Equal(t, testLogger.Lines[0], "INFO: Applying nil-task:nil-task on 10.0.0.1\n")
-			assert.Equal(t, testLogger.Lines[1], "INFO: Success nil-task:nil-task on 10.0.0.1\n")
+			assert.Equal(t, testLogger.Lines[1], "INFO: Success nil-task:nil-task on 10.0.0.1 took 0s\n")
 		})
 	})
 	t.Run("logs error if task fails", func(t *testing.T) {
@@ -112,7 +116,7 @@ func TestRunTask(t *testing.T) {
 			t.Fatalf("expected an error but got none")
 		}
 		assert.Equal(t, testLogger.Lines[0], "INFO: Applying failing-task:failing-task on 10.0.0.1\n")
-		assert.Equal(t, testLogger.Lines[1], "ERR: Failed failing-task:failing-task on 10.0.0.1\n")
+		assert.Equal(t, testLogger.Lines[1], "ERR: Failed failing-task:failing-task on 10.0.0.1 took 0s\n")
 		assert.Equal(t, testLogger.Lines[2], "ERR: Error: some task error\n")
 	})
 	t.Run("skips task if condition is meet", func(t *testing.T) {
