@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/pythonandchips/azad/plugin"
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestListEC2Resources(t *testing.T) {
@@ -32,7 +33,7 @@ func TestListEC2Resources(t *testing.T) {
 		return fakeEC2
 	}
 	t.Run("with basic configuration", func(t *testing.T) {
-		context := plugin.Context{}
+		context := &plugin.FakeContext{}
 
 		resources, err := ec2Resources(context)
 		if err != nil {
@@ -65,8 +66,8 @@ func TestListEC2Resources(t *testing.T) {
 		})
 	})
 	t.Run("with connect_on as PrivateDnsName", func(t *testing.T) {
-		context := plugin.NewInventoryContext(map[string]string{
-			"connect_on": "PrivateDnsName",
+		context := plugin.NewInventoryContext(map[string]cty.Value{
+			"connect_on": cty.StringVal("PrivateDnsName"),
 		})
 
 		resources, err := ec2Resources(context)
@@ -76,8 +77,8 @@ func TestListEC2Resources(t *testing.T) {
 		assert.Equal(t, resources[0].ConnectOn, "aws.internal.ip")
 	})
 	t.Run("with connect_on as PublicDnsName", func(t *testing.T) {
-		context := plugin.NewInventoryContext(map[string]string{
-			"connect_on": "PublicDnsName",
+		context := plugin.NewInventoryContext(map[string]cty.Value{
+			"connect_on": cty.StringVal("PublicDnsName"),
 		})
 
 		resources, err := ec2Resources(context)
@@ -87,8 +88,8 @@ func TestListEC2Resources(t *testing.T) {
 		assert.Equal(t, resources[0].ConnectOn, "aws.public.ip")
 	})
 	t.Run("with connect_on as PrivateIpAddress", func(t *testing.T) {
-		context := plugin.NewInventoryContext(map[string]string{
-			"connect_on": "PrivateIpAddress",
+		context := plugin.NewInventoryContext(map[string]cty.Value{
+			"connect_on": cty.StringVal("PrivateIpAddress"),
 		})
 
 		resources, err := ec2Resources(context)
@@ -98,8 +99,8 @@ func TestListEC2Resources(t *testing.T) {
 		assert.Equal(t, resources[0].ConnectOn, "10.0.0.1")
 	})
 	t.Run("with unrecognized connect_on ignores servers", func(t *testing.T) {
-		context := plugin.NewInventoryContext(map[string]string{
-			"connect_on": "NotRealValue",
+		context := plugin.NewInventoryContext(map[string]cty.Value{
+			"connect_on": cty.StringVal("NotRealValue"),
 		})
 
 		resources, err := ec2Resources(context)

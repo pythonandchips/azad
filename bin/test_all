@@ -10,7 +10,7 @@ while getopts "c" opt; do
   esac
 done
 
-packages=(azad cli communicator conn helpers logger parser plugin runner)
+packages=(azad communicator conn helpers logger parser plugin runner steps)
 coveragepath=./tmp/coverage
 testresults=./tmp/test_results
 mkdir -p $coveragepath

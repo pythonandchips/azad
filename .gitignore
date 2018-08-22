@@ -1,6 +1,5 @@
 tmp
 vendor/*
 !vendor/vendor.json
-example_playbooks/testing_playbook.az
-cli/azad
-cli/cli
+azad/azad
+example_playbooks/terraform/.terraform/

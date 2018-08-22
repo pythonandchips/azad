@@ -2,11 +2,24 @@ package plugin
 
 import (
 	"github.com/pythonandchips/azad/conn"
+	"github.com/zclconf/go-cty/cty"
 )
 
+// Context for task run. Main representation of data for task run
+type Context interface {
+	Run(Command) error
+	Stdout() string
+	Stderr() string
+	User() string
+	Get(string) string
+	GetWithDefault(string, string) string
+	PlaybookPath() string
+	RolePath() string
+}
+
 // NewContext create a new context for passing to a plugin to run a task
-func NewContext(vars map[string]string, conn conn.Conn, user, rootPath, rolePath string) Context {
-	return Context{
+func NewContext(vars map[string]cty.Value, conn conn.Conn, user, rootPath, rolePath string) Context {
+	return &taskContext{
 		vars:     vars,
 		conn:     conn,
 		user:     user,
@@ -16,16 +29,16 @@ func NewContext(vars map[string]string, conn conn.Conn, user, rootPath, rolePath
 }
 
 // NewInventoryContext create a new context for passing to a plugin to run a task
-func NewInventoryContext(vars map[string]string) Context {
-	return Context{
+func NewInventoryContext(vars map[string]cty.Value) Context {
+	return &taskContext{
 		vars: vars,
 	}
 }
 
 // Context for task run. Main representation of data for task run
-type Context struct {
+type taskContext struct {
 	conn     conn.Conn
-	vars     map[string]string
+	vars     map[string]cty.Value
 	env      map[string]string
 	user     string
 	stdout   string
@@ -35,7 +48,7 @@ type Context struct {
 }
 
 // Run command against the ssh connection for the server
-func (context *Context) Run(command Command) error {
+func (context *taskContext) Run(command Command) error {
 	cmd := conn.Command{
 		Interpreter: command.Interpreter,
 		Command:     command.Command,
@@ -48,40 +61,40 @@ func (context *Context) Run(command Command) error {
 }
 
 // User specified to run command
-func (context Context) User() string {
+func (context taskContext) User() string {
 	return context.user
 }
 
 // Stdout retrieve the result of stdout sent by the last run
-func (context Context) Stdout() string {
+func (context taskContext) Stdout() string {
 	return context.stdout
 }
 
 // Stderr retrieve the result of stdout sent by the last run
-func (context Context) Stderr() string {
+func (context taskContext) Stderr() string {
 	return context.stderr
 }
 
 // Get the configuration value for the task
-func (context Context) Get(key string) string {
-	return context.vars[key]
+func (context taskContext) Get(key string) string {
+	return context.vars[key].AsString()
 }
 
 // GetWithDefault return value or supplied default
-func (context Context) GetWithDefault(key, def string) string {
+func (context taskContext) GetWithDefault(key, def string) string {
 	val, ok := context.vars[key]
 	if !ok {
 		return def
 	}
-	return val
+	return val.AsString()
 }
 
 // PlaybookRoot absolute path to root of running playbook
-func (context Context) PlaybookRoot() string {
+func (context taskContext) PlaybookPath() string {
 	return context.rootPath
 }
 
 // RoleRoot absolute path to root of running role
-func (context Context) RoleRoot() string {
+func (context taskContext) RolePath() string {
 	return context.rolePath
 }

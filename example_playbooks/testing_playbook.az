@@ -1,0 +1,26 @@
+server "service_test" {
+  addresses = [
+    "10.0.0.1"
+  ]
+}
+
+variable "output_file" {
+  value = "azad.txt"
+}
+
+context "service test" {
+  apply-to = [
+    "service_test",
+  ]
+
+  includes {
+    roles = ["test_role", "folder_role"]
+  }
+}
+
+role "test_role" {
+  task "bash" "write-hello-world" {
+    command = "echo 'hello world' >> ./${ var.output_file }"
+    debug = true
+  }
+}

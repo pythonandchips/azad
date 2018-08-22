@@ -4,10 +4,10 @@ server "tag_kibana_server" {
   ]
 }
 
-host "tag_kibana_server" {
-  roles = [
-    "ruby"
-  ]
+context "tag_kibana_server" {
+  includes {
+    roles = ["ruby"]
+  }
 
   variable "home" {
     default = "/home"
