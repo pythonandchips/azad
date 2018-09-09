@@ -1,19 +1,28 @@
 package conn
 
-import "github.com/pythonandchips/azad/logger"
+import (
+	"github.com/pythonandchips/azad/logger"
+)
 
 // LoggerSSHConn log all ssh command to stdout instead of running agains a server
 //
 // Used for development and simulating configuration runs
 type LoggerSSHConn struct {
+	config      Config
 	ConnectedTo string
 	Commands    []Command
 	closed      bool
 }
 
+// Address of the connection
+func (loggerSSHConn LoggerSSHConn) Address() string {
+	return loggerSSHConn.ConnectedTo
+}
+
 // ConnectTo track the host name that would be used to connect to server
 func (loggerSSHConn *LoggerSSHConn) ConnectTo(hostName string) error {
 	loggerSSHConn.ConnectedTo = hostName
+	logger.Debug("Connection to %s", hostName)
 	return nil
 }
 

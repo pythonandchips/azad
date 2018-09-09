@@ -1,0 +1,8 @@
+variable "output_text" {
+  value = "other role"
+}
+
+task "bash" "add-to-file" {
+  debug = true
+  command = "echo '${ var.output_text}' >> ./${ var.output_file }"
+}

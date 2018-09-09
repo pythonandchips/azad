@@ -1,61 +1,55 @@
 package parser
 
 import (
-	multierror "github.com/hashicorp/go-multierror"
+	"fmt"
+	"io/ioutil"
+
 	"github.com/hashicorp/hcl2/hcl"
-	"github.com/pythonandchips/azad/azad"
-	"github.com/zclconf/go-cty/cty"
+	"github.com/hashicorp/hcl2/hcl/hclsyntax"
+	"github.com/pythonandchips/azad/steps"
 )
 
-// PlaybookFromFile return a playbook
-func PlaybookFromFile(path string, env map[string]string) (azad.Playbook, error) {
-	errors := &multierror.Error{}
-	evalContext := &hcl.EvalContext{
-		Variables: map[string]cty.Value{},
-	}
-	if env, err := envToVariables(env); err == nil {
-		evalContext.Variables["env"] = env
-	}
-	playbookDescription, err := loadConfigFile(path)
+// PlaybookSteps parse out the steps for a playbook
+func PlaybookSteps(path string) (steps.PlaybookSteps, error) {
+	playbookSteps := steps.PlaybookSteps{}
+	body, err := parseFile(path)
 	if err != nil {
-		errors = multierror.Append(errors, err)
+		return playbookSteps, err
 	}
-	variables, err := unpackVariables(playbookDescription.Variables, evalContext)
-	if err != nil {
-		return azad.Playbook{}, err
+	content, diag := body.Content(playbookSchema())
+	playbookSteps.StepList, _ = unpackSteps(content.Blocks)
+	playbookSteps.RoleList, _ = unpackRoles(path, content.Blocks)
+	if diag.HasErrors() {
+		return playbookSteps, fmt.Errorf(diag.Error())
 	}
-	if len(variables) == 0 {
-		evalContext.Variables["var"] = cty.MapValEmpty(cty.String)
-	} else {
-		evalContext.Variables["var"] = cty.MapVal(variables)
-	}
-	inventories, err := unpackInventories(playbookDescription.Inventories, evalContext)
-	if err != nil {
-		errors = multierror.Append(errors, err)
-	}
-	servers, err := unpackServer(playbookDescription.Servers)
-	if err != nil {
-		errors = multierror.Append(errors, err)
-	}
-	hosts, err := unpackHosts(playbookDescription.Hosts, playbookDescription.roleDescriptionGroups, evalContext)
-	if err != nil {
-		errors = multierror.Append(errors, err)
-	}
-	return azad.Playbook{
-		Inventories: inventories,
-		Servers:     servers,
-		Hosts:       hosts,
-		Variables:   variables,
-	}, errors.ErrorOrNil()
+	return playbookSteps, nil
 }
 
-func envToVariables(env map[string]string) (cty.Value, error) {
-	variables := map[string]cty.Value{}
-	for key, val := range env {
-		variables[key] = cty.StringVal(val)
+func parseFile(path string) (hcl.Body, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return hcl.EmptyBody(), err
 	}
-	if len(variables) == 0 {
-		return cty.MapValEmpty(cty.String), nil
+	file, parseErr := hclsyntax.ParseConfig(
+		data,
+		"config",
+		hcl.Pos{Line: 1, Column: 1},
+	)
+	if parseErr.HasErrors() {
+		return hcl.EmptyBody(), fmt.Errorf(parseErr.Error())
 	}
-	return cty.MapVal(variables), nil
+	return file.Body, nil
+}
+
+func playbookSchema() *hcl.BodySchema {
+	return &hcl.BodySchema{
+		Blocks: []hcl.BlockHeaderSchema{
+			{Type: "server", LabelNames: []string{"name"}},
+			{Type: "inventory", LabelNames: []string{"type"}},
+			{Type: "variable", LabelNames: []string{"name"}},
+			{Type: "input", LabelNames: []string{"type", "name"}},
+			{Type: "context", LabelNames: []string{"name"}},
+			{Type: "role", LabelNames: []string{"name"}},
+		},
+	}
 }

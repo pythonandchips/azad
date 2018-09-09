@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestContextRun(t *testing.T) {
@@ -16,13 +17,13 @@ func TestContextRun(t *testing.T) {
 		stderr: "stderr",
 	}
 	fakeConn := &FakeConn{response: response}
-	context := Context{
+	context := taskContext{
 		conn: fakeConn,
 		env: map[string]string{
 			"env": "dev",
 		},
-		vars: map[string]string{
-			"variable": "value",
+		vars: map[string]cty.Value{
+			"variable": cty.StringVal("value"),
 		},
 		user: "root",
 	}

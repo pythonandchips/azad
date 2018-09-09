@@ -9,6 +9,7 @@ type Conn interface {
 	ConnectTo(string) error
 	Run(Command) (Response, error)
 	Close()
+	Address() string
 }
 
 // NewConn create a now connection
@@ -21,7 +22,7 @@ func newConn(config Config) Conn {
 }
 
 func newFakeConn(config Config) Conn {
-	return &LoggerSSHConn{}
+	return &LoggerSSHConn{config: config}
 }
 
 // Simulate switch connection to output to

@@ -26,6 +26,7 @@ var dial = func(ip string, config *ssh.ClientConfig) (sshClient, error) {
 
 // ConnectTo creates new connection to specified address
 func (sshConn *SSHConn) ConnectTo(ip string) error {
+	sshConn.address = ip
 	key, err := ioutil.ReadFile(sshConn.config.KeyFilePath)
 	if err != nil {
 		return fmt.Errorf("Unable to read private key %s", sshConn.config.KeyFilePath)
@@ -37,6 +38,8 @@ func (sshConn *SSHConn) ConnectTo(ip string) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse private key: %v", err)
 	}
+
+	logger.Info("Connecting to %s as %s", ip, sshConn.config.User)
 
 	config := &ssh.ClientConfig{
 		User: sshConn.config.User,
@@ -104,8 +107,14 @@ func (sshConn *SSHConn) Close() {
 	sshConn.client.Close()
 }
 
+// Address of the server the connection is communicating with
+func (sshConn SSHConn) Address() string {
+	return sshConn.address
+}
+
 // SSHConn manage connections
 type SSHConn struct {
-	client sshClient
-	config Config
+	client  sshClient
+	config  Config
+	address string
 }

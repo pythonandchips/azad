@@ -1,36 +1,73 @@
-server "tag_kibana_server" {
+// adds to server store
+server "kibana_server" {
   addresses = [
     "10.0.0.1"
   ]
 }
 
-variable "elastic_search_role" {
-  default = "elasticsearch"
+// adds to server store
+inventory "aws.ec2" {
+  access_key_id = "access_key_id"
+  secret_key = "secret_key"
+  connect_on = "PublicIpAddress"
 }
 
+// adds to variable store
 variable "base_path" {
-  default = "/opt"
+  type = "map"
+  value = {
+    dir = "/opt",
+    owner = "slack",
+  }
 }
 
-host "tag_kibana_server" {
-  roles = [
-    "${var.elastic_search_role}"
+// adds to variable store
+input "credstash.get" "aws_access" {
+  keys = [
+    "secret_key"
+  ]
+}
+
+// sets creates variable context
+// sets default to apply-to
+context "kibana server" {
+  user = "root"
+  apply-to = [
+    "tag_kibana_server",
+    "development",
   ]
 
   variable "install_path" {
-    default = "${var.base_path}/installer"
+    type = "map"
+    value = "/installer"
   }
 
-  variable "home_path" {
-    default = "${var.base_path}/home"
+  includes {
+    roles = ["elasticsearch"]
+  }
+
+  task "apt-get.install" "install-erlang" {
+    package = "erlang-full"
+  }
+
+  includes {
+    roles = ["ruby"]
   }
 }
 
+// creates variable context
+// uses current server context
 role "elasticsearch" {
+  // sets the default user for all tasks
   user = "root"
 
+  input "crestash.get" "elasticsearch" {
+    keys = ["elasticsearch.password"]
+  }
+
   variable "ruby_install_path" {
-    default = "${var.install_path}/ruby"
+    type = "array"
+    value = ["/opt/ruby"]
   }
 
   task "stat" "ruby-exists" {

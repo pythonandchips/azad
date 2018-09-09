@@ -1,15 +1,28 @@
 package parser
 
-import "github.com/pythonandchips/azad/azad"
+import (
+	"fmt"
 
-func unpackServer(serverDescriptions []serverDescription) ([]azad.Server, error) {
-	servers := []azad.Server{}
-	for _, serverDescription := range serverDescriptions {
-		server := azad.Server{
-			Group:     serverDescription.Group,
-			Addresses: serverDescription.Addresses,
-		}
-		servers = append(servers, server)
+	"github.com/hashicorp/hcl2/hcl"
+	"github.com/pythonandchips/azad/steps"
+)
+
+func unpackServer(block *hcl.Block) (steps.Step, error) {
+	content, err := block.Body.Content(serverSchema())
+	if err != nil {
+		fmt.Println(err)
+		return steps.ServerStep{}, err
 	}
-	return servers, nil
+	return steps.ServerStep{
+		Name:      block.Labels[0],
+		Addresses: content.Attributes["addresses"],
+	}, nil
+}
+
+func serverSchema() *hcl.BodySchema {
+	return &hcl.BodySchema{
+		Attributes: []hcl.AttributeSchema{
+			{Name: "addresses", Required: true},
+		},
+	}
 }

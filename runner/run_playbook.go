@@ -1,66 +1,119 @@
 package runner
 
 import (
-	"github.com/pythonandchips/azad/azad"
-	"github.com/pythonandchips/azad/communicator"
+	"path/filepath"
+	"strings"
+
 	"github.com/pythonandchips/azad/logger"
 	"github.com/pythonandchips/azad/parser"
+	"github.com/pythonandchips/azad/steps"
 )
 
-var config azad.Config
+var parsePlaybook = func(playbookFilePath string) (steps.PlaybookSteps, error) {
+	return parser.PlaybookSteps(playbookFilePath)
+}
 
-// RunPlaybook run the playbook
-var RunPlaybook = func(playbookFilePath string, globalConfig azad.Config) {
-	config = globalConfig
-	env := map[string]string{}
-	playbook, err := parser.PlaybookFromFile(playbookFilePath, env)
+var roleList steps.RoleContainers
+
+// RunPlaybook run playbook with given path and config
+var RunPlaybook = func(playbookFilePath string, globalConfig Config) error {
+	logger.Info("Starting playbook run with %s", playbookFilePath)
+	playbookSteps, err := parsePlaybook(playbookFilePath)
+	if err != nil {
+		logger.ErrorAndExit("Playbook has invalid syntax: %s", err)
+	}
+	roleList = playbookSteps.RoleList
+	roleNames := []string{}
+	for _, role := range roleList {
+		roleNames = append(roleNames, role.Name)
+	}
+	logger.Debug("Available roles %s", strings.Join(roleNames, ", "))
+	err = validateSteps(playbookSteps.StepList)
 	if err != nil {
 		logger.ErrorAndExit("Playbook is invalid: %s", err)
 	}
-	playbook, err = readInventory(playbook)
-	if err != nil {
-		logger.ErrorAndExit("unable to load inventory: %s", err)
-		return
+	playbookPath, _ := filepath.Abs(filepath.Dir(playbookFilePath))
+	globalStore := &store{
+		config: globalConfig,
+		path:   playbookPath,
 	}
-	err = validatePlugins(playbook)
-	if err != nil {
-		logger.ErrorAndExit("Unable to load plugins: %s", err)
-		return
-	}
-	for _, host := range playbook.Hosts {
-		logger.Info("Running for %s", host.ServerGroup)
-
-		if err != nil {
-			logger.ErrorAndExit("%s", err)
-		}
-
-		server, _ := playbook.LookupServer(host.ServerGroup)
-		runners, err := createRunners(server.Addresses, mergeVariables(playbook.Variables, host.Variables))
-		defer runners.Close()
-		if err != nil {
-			logger.Error("%s", err)
-			return
-		}
-		for _, role := range host.Roles {
-			runTasks(role, runners.ChildRunners(role.Variables), playbook.Path)
-			logger.Info("Finished Applying %s", host.ServerGroup)
+	for _, step := range playbookSteps.StepList {
+		switch val := step.(type) {
+		case steps.ServerStep:
+			if err = handleServer(val, globalStore); err != nil {
+				return err
+			}
+		case steps.InventoryStep:
+			if err = handleInventory(val, globalStore); err != nil {
+				return err
+			}
+		case steps.VariableStep:
+			if err = handleVariable(val, globalStore); err != nil {
+				return err
+			}
+		case steps.ContextContainer:
+			if err = handleContainerContext(val, globalStore); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
-func runTasks(role azad.Role, runners runners, rootPath string) error {
-	for _, task := range role.Tasks {
-		taskSchema, _ := communicator.GetTask(task.PluginName(), task.TaskName())
-		for _, runner := range runners {
-			runTaskParams := runTaskParams{
-				task:       task,
-				taskSchema: taskSchema,
-				runner:     runner,
-				rootPath:   rootPath,
-				rolePath:   role.Path,
-				user:       role.User,
+func handleContainerContext(contextContainer steps.ContextContainer, store *store) error {
+	applyToValue, evalErr := store.evalVariable(contextContainer.ApplyTo, allowList)
+	if evalErr != nil {
+		return evalErr
+	}
+	applyTo := []string{}
+	for _, val := range applyToValue.AsValueSlice() {
+		applyTo = append(applyTo, val.AsString())
+	}
+	user := ""
+	if contextContainer.User != nil {
+		userValue, evalErr := store.evalVariable(contextContainer.User, allowString)
+		if evalErr != nil {
+			return evalErr
+		}
+		user = userValue.AsString()
+	}
+	contextStore, contextErr := store.contextStore(applyTo, user, store.path)
+	defer func() {
+		contextStore.closeConnections()
+	}()
+	if contextErr != nil {
+		return contextErr
+	}
+	logger.Info("Starting running context %s", contextContainer.Name)
+	err := runForContext(contextContainer.Steps, &contextStore)
+	if err != nil {
+		logger.Error("Failed to apply context %s:", contextContainer.Name)
+		logger.Error("Error message: %s", err)
+		return err
+	}
+	logger.Info("Finished running context %s", contextContainer.Name)
+	return nil
+}
+
+func validateSteps(steps.StepList) error {
+	return nil
+}
+
+func runForContext(steplist steps.StepList, store *contextStore) error {
+	for _, step := range steplist {
+		switch val := step.(type) {
+		case steps.VariableStep:
+			if err := handleVariable(val, store); err != nil {
+				return err
 			}
-			runTask(runTaskParams)
+		case steps.TaskStep:
+			if err := handleTask(val, store); err != nil {
+				return err
+			}
+		case steps.IncludesStep:
+			if err := handleIncludes(val, store); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

@@ -1,4 +1,6 @@
-dependents = ["security/firewall", "security/patches"]
+includes {
+  role = ["security/firewall", "security/patches"]
+}
 
 variable "install_path" {
   default = "${var.home}/ruby"
@@ -17,8 +19,5 @@ task "apt-get" "install ruby" {
 }
 
 includes {
-  paths = [
-    "update",
-    "install",
-  ]
+  role = [ "update", "install" ]
 }

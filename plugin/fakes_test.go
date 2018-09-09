@@ -18,6 +18,10 @@ func (fakeConn *FakeConn) Run(command conn.Command) (conn.Response, error) {
 
 func (fakeConn *FakeConn) Close() {}
 
+func (fakeConn *FakeConn) Address() string {
+	return ""
+}
+
 type FakeResponse struct {
 	stdout string
 	stderr string
