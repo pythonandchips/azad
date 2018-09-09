@@ -22,7 +22,7 @@ func TestHandleIncludes(t *testing.T) {
 	t.Run("when roles cannot be evaluated returns error", func(t *testing.T) {
 		includeStep.Roles = testExpression("role", `not_a_value`)
 		err := handleIncludes(includeStep, contextStore)
-		errorMessage := "1 error occurred:\n\n* variable not found: not_a_value"
+		errorMessage := "1 error occurred:\n\t* variable not found: not_a_value\n\n"
 		assert.Equal(t, errorMessage, err.Error())
 	})
 	t.Run("when roles is not an array returns error", func(t *testing.T) {

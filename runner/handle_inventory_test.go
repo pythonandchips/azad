@@ -50,7 +50,7 @@ func TestHandleInventory(t *testing.T) {
 		if err == nil {
 			t.Fatalf("expected error but got none")
 		}
-		assert.Equal(t, "1 error occurred:\n\n* variable not found: rank", err.Error())
+		assert.Equal(t, "1 error occurred:\n\t* variable not found: rank\n\n", err.Error())
 	})
 	t.Run("when inventory raises an error", func(t *testing.T) {
 		inventoryStep, store := testHandleInventorySetup()
