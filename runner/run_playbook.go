@@ -18,7 +18,6 @@ var roleList steps.RoleContainers
 // RunPlaybook run playbook with given path and config
 var RunPlaybook = func(playbookFilePath string, globalConfig Config) error {
 	logger.Info("Starting playbook run with %s", playbookFilePath)
-
 	playbookSteps, err := parsePlaybook(playbookFilePath)
 	if err != nil {
 		logger.ErrorAndExit("Playbook has invalid syntax: %s", err)

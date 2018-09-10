@@ -5,15 +5,16 @@ import (
 
 	"github.com/pythonandchips/azad/expect"
 	plugintesting "github.com/pythonandchips/azad/plugin/testing"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestAddRepoCommand(t *testing.T) {
 	t.Run("with package name", func(t *testing.T) {
 		t.Run("and command is successful", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"repo": "deb https://sensu.global.ssl.fastly.net/apt stretch main",
-				"key":  "https://sensu.global.ssl.fastly.net/apt/pubkey.gpg",
+			fakeContext.SetVars(map[string]cty.Value{
+				"repo": cty.StringVal("deb https://sensu.global.ssl.fastly.net/apt stretch main"),
+				"key":  cty.StringVal("https://sensu.global.ssl.fastly.net/apt/pubkey.gpg"),
 			})
 			_, err := addRepoCommand(fakeContext)
 			expect.NoErrors(t, err)
@@ -27,10 +28,10 @@ func TestAddRepoCommand(t *testing.T) {
 		})
 		t.Run("with update specified", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"repo":   "deb https://sensu.global.ssl.fastly.net/apt stretch main",
-				"key":    "https://sensu.global.ssl.fastly.net/apt/pubkey.gpg",
-				"update": "true",
+			fakeContext.SetVars(map[string]cty.Value{
+				"repo":   cty.StringVal("deb https://sensu.global.ssl.fastly.net/apt stretch main"),
+				"key":    cty.StringVal("https://sensu.global.ssl.fastly.net/apt/pubkey.gpg"),
+				"update": cty.BoolVal(true),
 			})
 			_, err := addRepoCommand(fakeContext)
 			expect.NoErrors(t, err)

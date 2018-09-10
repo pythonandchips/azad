@@ -8,6 +8,7 @@ import (
 	"github.com/pythonandchips/azad/expect"
 	plugintesting "github.com/pythonandchips/azad/plugin/testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestTemplateCommand(t *testing.T) {
@@ -19,9 +20,12 @@ func TestTemplateCommand(t *testing.T) {
 			)
 			fakeContext := plugintesting.NewFakeContext()
 			fakeContext.SetRolePath(rolepath)
-			fakeContext.SetVars(map[string]string{
-				"source": "template_file.conf",
-				"dest":   "$HOME/file.conf",
+			fakeContext.SetVars(map[string]cty.Value{
+				"source": cty.StringVal("template_file.conf"),
+				"dest":   cty.StringVal("$HOME/file.conf"),
+				"locals": cty.MapVal(map[string]cty.Value{
+					"temp_variable": cty.StringVal("fake me"),
+				}),
 			})
 
 			_, err := templateCommand(fakeContext)

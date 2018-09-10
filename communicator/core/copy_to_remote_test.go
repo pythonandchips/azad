@@ -8,6 +8,7 @@ import (
 	"github.com/pythonandchips/azad/expect"
 	plugintesting "github.com/pythonandchips/azad/plugin/testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestCopyToRemoteCommand(t *testing.T) {
@@ -19,9 +20,9 @@ func TestCopyToRemoteCommand(t *testing.T) {
 			)
 			fakeContext := plugintesting.NewFakeContext()
 			fakeContext.SetRolePath(rolepath)
-			fakeContext.SetVars(map[string]string{
-				"source": "copy_file.conf",
-				"dest":   "$HOME/file.conf",
+			fakeContext.SetVars(map[string]cty.Value{
+				"source": cty.StringVal("copy_file.conf"),
+				"dest":   cty.StringVal("$HOME/file.conf"),
 			})
 			_, err := copyToRemoteCommand(fakeContext)
 			expect.NoErrors(t, err)

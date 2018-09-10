@@ -11,7 +11,7 @@ func installConfig() plugin.Task {
 	return plugin.Task{
 		Fields: []plugin.Field{
 			{Name: "package", Type: "String", Required: true},
-			{Name: "update", Type: "String"},
+			{Name: "update", Type: "Bool"},
 			{Name: "deb", Type: "String"},
 		},
 		Run: installCommand,

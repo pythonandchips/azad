@@ -12,7 +12,7 @@ func addRepoConfig() plugin.Task {
 		Fields: []plugin.Field{
 			{Name: "repo", Type: "String", Required: true},
 			{Name: "key", Type: "String", Required: true},
-			{Name: "update", Type: "String"},
+			{Name: "update", Type: "Bool"},
 		},
 		Run: addRepoCommand,
 	}
@@ -32,7 +32,6 @@ func addRepoCommand(context plugin.Context) (map[string]string, error) {
 		return map[string]string{}, fmt.Errorf("unable to find package name")
 	}
 	basename := matches[0][1]
-	fmt.Println(basename)
 	commands := []string{
 		fmt.Sprintf(`wget -qO - %s | sudo apt-key add -`, context.Get("key")),
 		fmt.Sprintf(`echo "%s" > /etc/apt/sources.list.d/%s.list`, context.Get("repo"), basename),

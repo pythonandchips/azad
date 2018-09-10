@@ -16,6 +16,7 @@ func templateConfig() plugin.Task {
 		Fields: []plugin.Field{
 			{Name: "source", Type: "String", Required: true},
 			{Name: "dest", Type: "String", Required: true},
+			{Name: "locals", Type: "Map", Required: false},
 		},
 		Run: templateCommand,
 	}
@@ -34,7 +35,7 @@ func templateCommand(context plugin.Context) (map[string]string, error) {
 		return map[string]string{}, err
 	}
 	data := bytes.NewBuffer([]byte{})
-	err = fileTemplate.Execute(data, context.Variables())
+	err = fileTemplate.Execute(data, context.GetMap("locals"))
 	if err != nil {
 		return map[string]string{}, err
 	}

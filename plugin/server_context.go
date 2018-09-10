@@ -55,9 +55,18 @@ func (context serverContext) Exists(key string) bool {
 	return ok
 }
 
-// Variables raw variables for context
-func (context serverContext) Variables() map[string]cty.Value {
-	return context.vars
+// GetMap returns value as a map
+func (context serverContext) GetMap(key string) map[string]string {
+	out := map[string]string{}
+	v, ok := context.vars[key]
+	if !ok {
+		return out
+	}
+	val := v.AsValueMap()
+	for k, v := range val {
+		out[k] = v.AsString()
+	}
+	return out
 }
 
 // GetWithDefault return value or supplied default
@@ -80,5 +89,9 @@ func (context serverContext) RolePath() string {
 }
 
 func (context serverContext) IsTrue(key string) bool {
-	return context.Get(key) == "true"
+	v, ok := context.vars[key]
+	if !ok {
+		return false
+	}
+	return v.True()
 }

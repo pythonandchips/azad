@@ -30,8 +30,8 @@ type Context interface {
 	Stderr() string
 	User() string
 	Get(string) string
+	GetMap(string) map[string]string
 	Exists(string) bool
-	Variables() map[string]string
 	GetWithDefault(string, string) string
 	PlaybookPath() string
 	RolePath() string

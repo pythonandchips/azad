@@ -222,7 +222,7 @@
 			"revisionTime": "2018-04-06T02:34:53Z"
 		},
 		{
-			"checksumSHA1": "0gMFRFkl/ZTYT4hBUmhZxkhsHBI=",
+			"checksumSHA1": "ekhg+MJLLGkJQdh/tZ4A3EZwpNY=",
 			"path": "github.com/hashicorp/hcl2/hcl/hclsyntax",
 			"revision": "9db880accff19d9bd953958df738ef0c02b4a311",
 			"revisionTime": "2018-04-06T02:34:53Z"
@@ -377,7 +377,7 @@
 			"revisionTime": "2018-07-08T16:53:44Z"
 		},
 		{
-			"checksumSHA1": "lN2xlA6Utu7tXy2iUoMF2+y9EUE=",
+			"checksumSHA1": "BCNYmf4Ek93G4lk5x3ucNi/lTwA=",
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "0605a8320aceb4207a5fb3521281e17ec2075476",
 			"revisionTime": "2018-07-08T16:53:44Z"

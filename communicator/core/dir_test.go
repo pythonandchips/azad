@@ -6,14 +6,15 @@ import (
 	"github.com/pythonandchips/azad/expect"
 	plugintesting "github.com/pythonandchips/azad/plugin/testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestDir(t *testing.T) {
 	t.Run("when command is successful", func(t *testing.T) {
 		t.Run("with only path specified", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"path": "/home/he-man",
+			fakeContext.SetVars(map[string]cty.Value{
+				"path": cty.StringVal("/home/he-man"),
 			})
 			_, err := dir(fakeContext)
 			expect.NoErrors(t, err)
@@ -26,9 +27,9 @@ func TestDir(t *testing.T) {
 
 		t.Run("with path and owner specified", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"path":  "/home/he-man",
-				"owner": "heman",
+			fakeContext.SetVars(map[string]cty.Value{
+				"path":  cty.StringVal("/home/he-man"),
+				"owner": cty.StringVal("heman"),
 			})
 			_, err := dir(fakeContext)
 			expect.NoErrors(t, err)
@@ -42,10 +43,10 @@ func TestDir(t *testing.T) {
 
 		t.Run("with path, owner, group specified", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"path":  "/home/he-man",
-				"owner": "heman",
-				"group": "grayskull",
+			fakeContext.SetVars(map[string]cty.Value{
+				"path":  cty.StringVal("/home/he-man"),
+				"owner": cty.StringVal("heman"),
+				"group": cty.StringVal("grayskull"),
 			})
 			_, err := dir(fakeContext)
 			expect.NoErrors(t, err)

@@ -2,11 +2,12 @@ package testing
 
 import (
 	"github.com/pythonandchips/azad/plugin"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // FakeContext for testing plugins
 type FakeContext struct {
-	vars       map[string]string
+	vars       map[string]cty.Value
 	env        map[string]string
 	user       string
 	stdout     string
@@ -29,7 +30,7 @@ func (context *FakeContext) CommandRan() plugin.Command {
 }
 
 // SetVars for the fake context
-func (context *FakeContext) SetVars(vars map[string]string) {
+func (context *FakeContext) SetVars(vars map[string]cty.Value) {
 	context.vars = vars
 }
 
@@ -61,7 +62,7 @@ func (context FakeContext) Stderr() string {
 
 // Get the configuration value for the task
 func (context FakeContext) Get(key string) string {
-	return context.vars[key]
+	return context.vars[key].AsString()
 }
 
 // Exists check the key exists
@@ -70,9 +71,18 @@ func (context FakeContext) Exists(key string) bool {
 	return ok
 }
 
-// Variables raw variables for context
-func (context FakeContext) Variables() map[string]string {
-	return context.vars
+// GetMap return value as a map
+func (context FakeContext) GetMap(key string) map[string]string {
+	out := map[string]string{}
+	v, ok := context.vars[key]
+	if !ok {
+		return out
+	}
+	val := v.AsValueMap()
+	for k, v := range val {
+		out[k] = v.AsString()
+	}
+	return out
 }
 
 // GetWithDefault return value or supplied default
@@ -81,7 +91,7 @@ func (context FakeContext) GetWithDefault(key, def string) string {
 	if !ok {
 		return def
 	}
-	return val
+	return val.AsString()
 }
 
 // PlaybookPath absolute path to root of running playbook
@@ -96,5 +106,9 @@ func (context FakeContext) RolePath() string {
 
 // IsTrue checks if key exists and matches "true"
 func (context FakeContext) IsTrue(key string) bool {
-	return context.Get(key) == "true"
+	v, ok := context.vars[key]
+	if !ok {
+		return false
+	}
+	return v.True()
 }

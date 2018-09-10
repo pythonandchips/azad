@@ -6,14 +6,15 @@ import (
 	"github.com/pythonandchips/azad/expect"
 	plugintesting "github.com/pythonandchips/azad/plugin/testing"
 	"github.com/stretchr/testify/assert"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func TestInstallCommand(t *testing.T) {
 	t.Run("with package name", func(t *testing.T) {
 		t.Run("and command is successful", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"package": "curl",
+			fakeContext.SetVars(map[string]cty.Value{
+				"package": cty.StringVal("curl"),
 			})
 			_, err := installCommand(fakeContext)
 			expect.NoErrors(t, err)
@@ -24,9 +25,9 @@ func TestInstallCommand(t *testing.T) {
 		})
 		t.Run("and update is specified", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"package": "curl",
-				"update":  "true",
+			fakeContext.SetVars(map[string]cty.Value{
+				"package": cty.StringVal("curl"),
+				"update":  cty.BoolVal(true),
 			})
 			_, err := installCommand(fakeContext)
 			expect.NoErrors(t, err)
@@ -38,9 +39,9 @@ func TestInstallCommand(t *testing.T) {
 		})
 		t.Run("and deb is specified", func(t *testing.T) {
 			fakeContext := plugintesting.NewFakeContext()
-			fakeContext.SetVars(map[string]string{
-				"package": "erlang",
-				"deb":     "https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb",
+			fakeContext.SetVars(map[string]cty.Value{
+				"package": cty.StringVal("erlang"),
+				"deb":     cty.StringVal("https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb"),
 			})
 			_, err := installCommand(fakeContext)
 			expect.NoErrors(t, err)
