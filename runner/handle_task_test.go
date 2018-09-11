@@ -61,6 +61,7 @@ func TestHandleTask(t *testing.T) {
 					"interpolation": testExpression("interpolation", `"${var.package}-name"`),
 					"map-access":    testExpression("map-access", `var.folders["install"]`),
 					"array-access":  testExpression("array-access", `var.packages[0]`),
+					"composite":     testExpression("composite", `"${var.packages[0]} ${var.folders["install"]}, var.package"`),
 				},
 			},
 		}

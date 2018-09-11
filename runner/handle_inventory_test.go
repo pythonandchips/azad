@@ -88,7 +88,7 @@ func fakeGetInventory() {
 				{Name: "access_id", Required: true},
 				{Name: "secret_key"},
 			},
-			Run: func(plugin.Context) ([]plugin.Resource, error) {
+			Run: func(plugin.InventoryContext) ([]plugin.Resource, error) {
 				return []plugin.Resource{
 					{ConnectOn: "10.0.0.1", Groups: []string{"development", "kibana_server"}},
 					{ConnectOn: "10.0.0.2", Groups: []string{"kibana_server"}},
@@ -105,7 +105,7 @@ func fakeCallToInventoryError() {
 				{Name: "access_id", Required: true},
 				{Name: "secret_key"},
 			},
-			Run: func(plugin.Context) ([]plugin.Resource, error) {
+			Run: func(plugin.InventoryContext) ([]plugin.Resource, error) {
 				return []plugin.Resource{}, fmt.Errorf("error running inventory")
 			},
 		}, nil

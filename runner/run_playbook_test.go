@@ -17,6 +17,7 @@ func TestRunPlaybook(t *testing.T) {
 			defaultServerStep(),
 			defaultInventoryStep(),
 			defaultVariableStep(),
+			defaultInputTask(),
 			mapVariableStep(),
 			arrayVariableStep(),
 			defaultContext(),
@@ -35,7 +36,7 @@ func TestRunPlaybook(t *testing.T) {
 				{Name: "access_id"},
 				{Name: "secret_key"},
 			},
-			Run: func(plugin.Context) ([]plugin.Resource, error) {
+			Run: func(plugin.InventoryContext) ([]plugin.Resource, error) {
 				return []plugin.Resource{
 					{ConnectOn: "10.0.0.1", Groups: []string{"development", "kibana_server"}},
 					{ConnectOn: "10.0.0.2", Groups: []string{"kibana_server"}},
@@ -45,6 +46,9 @@ func TestRunPlaybook(t *testing.T) {
 	}
 	getTask = func(pluginName, taskName string) (plugin.Task, error) {
 		return testPluginTask(), nil
+	}
+	getInput = func(pluginName, taskName string) (plugin.Input, error) {
+		return testPluginInput(), nil
 	}
 
 	err := RunPlaybook(playbookPath, Config{})

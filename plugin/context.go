@@ -17,6 +17,24 @@ type Context interface {
 	RolePath() string
 }
 
+// InputContext supplies context for input types
+type InputContext interface {
+	User() string
+	Get(string) string
+	GetWithDefault(string, string) string
+	PlaybookPath() string
+	RolePath() string
+}
+
+// InventoryContext supplies context for inventory types
+type InventoryContext interface {
+	User() string
+	Get(string) string
+	GetWithDefault(string, string) string
+	PlaybookPath() string
+	RolePath() string
+}
+
 // NewContext create a new context for passing to a plugin to run a task
 func NewContext(vars map[string]cty.Value, conn conn.Conn, user, rootPath, rolePath string) Context {
 	return &taskContext{
@@ -32,6 +50,15 @@ func NewContext(vars map[string]cty.Value, conn conn.Conn, user, rootPath, roleP
 func NewInventoryContext(vars map[string]cty.Value) Context {
 	return &taskContext{
 		vars: vars,
+	}
+}
+
+// NewInputContext create a new context for passing to a plugin to run a task
+func NewInputContext(vars map[string]cty.Value, rootPath, rolePath string) Context {
+	return &taskContext{
+		vars:     vars,
+		rootPath: rootPath,
+		rolePath: rolePath,
 	}
 }
 

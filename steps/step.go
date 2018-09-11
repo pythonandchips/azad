@@ -65,6 +65,24 @@ type InputStep struct {
 	Body hcl.Body
 }
 
+// PluginName returns the plugin name for the InputStep
+func (inputStep InputStep) PluginName() string {
+	parts := strings.Split(inputStep.Type, ".")
+	if len(parts) == 2 {
+		return parts[0]
+	}
+	return "core"
+}
+
+// ServiceName returns the service name for the inventory
+func (inputStep InputStep) ServiceName() string {
+	parts := strings.Split(inputStep.Type, ".")
+	if len(parts) == 2 {
+		return parts[1]
+	}
+	return parts[0]
+}
+
 // TaskStep apply an operation to an external resource over ssh
 type TaskStep struct {
 	Type      string

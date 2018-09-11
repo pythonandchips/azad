@@ -227,7 +227,7 @@
 			"revisionTime": "2018-09-05T15:26:29Z"
 		},
 		{
-			"checksumSHA1": "aMQP6TxX2hj9mE5J5/MDsV891gU=",
+			"checksumSHA1": "RNoOVGaFtYqaPMyARZuHc2OejDs=",
 			"path": "github.com/hashicorp/hcl2/hcl/hclsyntax",
 			"revision": "864f97c8ab203ef9f72a47f231e7d10e52a33ce7",
 			"revisionTime": "2018-09-05T15:26:29Z"
@@ -244,6 +244,12 @@
 			"path": "github.com/jmespath/go-jmespath",
 			"revision": "8609a77e872221af054dd404430291a856c9ec75",
 			"revisionTime": "2018-09-07T21:06:05Z"
+		},
+		{
+			"checksumSHA1": "CjxR/aHKEs3MyfBhfQej1nDrJvs=",
+			"path": "github.com/joho/godotenv",
+			"revision": "23d116af351c84513e1946b527c88823e476be13",
+			"revisionTime": "2018-09-11T08:04:31Z"
 		},
 		{
 			"checksumSHA1": "XEV3BI3nHA/rNa/tIgB7fVCrDww=",
@@ -388,7 +394,7 @@
 			"revisionTime": "2018-09-06T22:13:12Z"
 		},
 		{
-			"checksumSHA1": "othnvXmmdxkNRyNDxRg5SKwLP8k=",
+			"checksumSHA1": "XJr6+rzzxASewSbC/SCStyGlmuw=",
 			"path": "golang.org/x/text/unicode/norm",
 			"revision": "4ae1256249243a4eb350a9a372e126557f2aa346",
 			"revisionTime": "2018-09-06T22:13:12Z"

@@ -8,6 +8,10 @@ variable "output_file" {
   value = "azad.txt"
 }
 
+input "env_file" "access" {
+  path = "env_file"
+}
+
 context "service test" {
   apply-to = [
     "service_test",
@@ -22,5 +26,9 @@ role "test_role" {
   task "bash" "write-hello-world" {
     command = "echo 'hello world' >> ./${ var.output_file }"
     debug = true
+  }
+
+  task "bash" "write-secrets" {
+    command = "echo '${ var.access["access_key"] }' >> ./${ var.output_file }"
   }
 }

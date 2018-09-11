@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"github.com/hashicorp/hcl2/hcl"
 	"github.com/pythonandchips/azad/communicator"
 	"github.com/pythonandchips/azad/plugin"
 	"github.com/pythonandchips/azad/steps"
@@ -12,7 +13,7 @@ func handleInventory(inventoryStep steps.InventoryStep, store serverStore) error
 	if err != nil {
 		return err
 	}
-	attributes, err := attributesForInventory(inventoryStep, inventorySchema, store)
+	attributes, err := attributesForSchema(inventoryStep.Body, inventorySchema.Fields, store)
 	if err != nil {
 		return err
 	}
@@ -45,10 +46,10 @@ func inventorySchema(inventoryStep steps.InventoryStep) (plugin.Inventory, error
 	return getInventory(pluginName, serviceName)
 }
 
-func attributesForInventory(inventoryStep steps.InventoryStep, inventorySchema plugin.Inventory, store serverStore) (map[string]cty.Value, error) {
+func attributesForSchema(body hcl.Body, fields []plugin.Field, store evalStore) (map[string]cty.Value, error) {
 	attributes := map[string]cty.Value{}
-	inventoryBodySchema := createSchemaFromFields(inventorySchema.Fields)
-	content, contentErr := inventoryStep.Body.Content(inventoryBodySchema)
+	inventoryBodySchema := createSchemaFromFields(fields)
+	content, contentErr := body.Content(inventoryBodySchema)
 	if contentErr != nil {
 		return attributes, contentErr
 	}

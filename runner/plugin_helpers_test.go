@@ -52,6 +52,17 @@ func testFullPluginTask() plugin.Task {
 	}
 }
 
+func testPluginInput() plugin.Input {
+	return plugin.Input{
+		Fields: []plugin.Field{
+			{Name: "path", Type: "string", Required: true},
+		},
+		Run: func(plugin.InputContext) (map[string]string, error) {
+			return map[string]string{"secret_key": "hello"}, nil
+		},
+	}
+}
+
 func testErrorPluginTask() plugin.Task {
 	return plugin.Task{
 		Fields: []plugin.Field{},

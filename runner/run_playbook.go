@@ -55,6 +55,10 @@ var RunPlaybook = func(playbookFilePath string, globalConfig Config) error {
 			if err = handleContainerContext(val, globalStore); err != nil {
 				return err
 			}
+		case steps.InputStep:
+			if err := handleInput(val, globalStore); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -112,6 +116,10 @@ func runForContext(steplist steps.StepList, store *contextStore) error {
 			}
 		case steps.IncludesStep:
 			if err := handleIncludes(val, store); err != nil {
+				return err
+			}
+		case steps.InputStep:
+			if err := handleInput(val, store); err != nil {
 				return err
 			}
 		}
