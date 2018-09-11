@@ -25,6 +25,14 @@ func GetSchema() plugin.Schema {
 				Run: bash,
 			},
 		},
+		Input: map[string]plugin.Input{
+			"env_file": {
+				Fields: []plugin.Field{
+					{Name: "path", Type: "String", Required: true},
+				},
+				Run: envFile,
+			},
+		},
 	}
 }
 

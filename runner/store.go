@@ -43,6 +43,13 @@ type taskStore interface {
 	rolePath() string
 }
 
+type inputStore interface {
+	evalStore
+	addVariable(variable) error
+	playbookPath() string
+	rolePath() string
+}
+
 type store struct {
 	servers   servers
 	variables variables
@@ -52,6 +59,14 @@ type store struct {
 
 func (store store) contextStore(applyTo []string, user, path string) (contextStore, error) {
 	return newContextStore(applyTo, user, path, store)
+}
+
+func (store store) playbookPath() string {
+	return store.path
+}
+
+func (store store) rolePath() string {
+	return store.path
 }
 
 func (store *store) addServers(servers servers) error {
@@ -180,10 +195,7 @@ func buildVariable(path []string, value cty.Value, variableMap map[string]cty.Va
 }
 
 func mapToCtyValue(data map[string]cty.Value) cty.Value {
-	if len(data) == 0 {
-		return cty.MapValEmpty(cty.String)
-	}
-	return cty.MapVal(data)
+	return cty.ObjectVal(data)
 }
 
 func variablePathFromTraverser(traverser []hcl.Traverser) []string {

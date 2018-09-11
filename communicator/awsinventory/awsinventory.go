@@ -43,7 +43,7 @@ type ec2iface interface {
 	DescribeInstancesPages(*ec2.DescribeInstancesInput, func(*ec2.DescribeInstancesOutput, bool) bool) error
 }
 
-var ec2Session = func(context plugin.Context) ec2iface {
+var ec2Session = func(context plugin.InventoryContext) ec2iface {
 	sess := session.Must(
 		session.NewSession(&aws.Config{
 			MaxRetries: aws.Int(3),
@@ -56,7 +56,7 @@ var ec2Session = func(context plugin.Context) ec2iface {
 	return svc
 }
 
-func ec2Resources(context plugin.Context) ([]plugin.Resource, error) {
+func ec2Resources(context plugin.InventoryContext) ([]plugin.Resource, error) {
 	svc := ec2Session(context)
 	filters := []*ec2.Filter{
 		{
@@ -77,7 +77,7 @@ func ec2Resources(context plugin.Context) ([]plugin.Resource, error) {
 }
 
 func parseResource(
-	context plugin.Context,
+	context plugin.InventoryContext,
 	resources []plugin.Resource,
 	result *ec2.DescribeInstancesOutput,
 	lastPage bool,

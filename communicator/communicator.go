@@ -49,3 +49,16 @@ func GetInventory(pluginName, serviceName string) (plugin.Inventory, error) {
 	}
 	return service, nil
 }
+
+// GetInput returns the input for the specified plugin and service e.g. core.ini
+func GetInput(pluginName, serviceName string) (plugin.Input, error) {
+	schema, err := getPlugin(pluginName)
+	if err != nil {
+		return plugin.Input{}, err
+	}
+	service, ok := schema.Input[serviceName]
+	if !ok {
+		return plugin.Input{}, fmt.Errorf("plugin %s does not contain inventory %s", pluginName, serviceName)
+	}
+	return service, nil
+}

@@ -108,6 +108,17 @@ func defaultRoleContainer() steps.RoleContainer {
 	}
 }
 
+func defaultInputTask() steps.InputStep {
+	return steps.InputStep{
+		Type: "core.ini",
+		Body: &TestBody{
+			attributes: map[string]*hcl.Attribute{
+				"path": testExpression("package", `"ini_file"`),
+			},
+		},
+	}
+}
+
 func testExpression(name, value string) *hcl.Attribute {
 	expr, parseErr := hclsyntax.ParseExpression([]byte(value), "testfile.az", hcl.Pos{Line: 1, Column: 1})
 	if parseErr.HasErrors() {

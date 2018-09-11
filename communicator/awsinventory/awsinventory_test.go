@@ -29,7 +29,7 @@ func TestListEC2Resources(t *testing.T) {
 	fakeEC2 := &fakeEC2{
 		instances: []*ec2.Instance{instance},
 	}
-	ec2Session = func(context plugin.Context) ec2iface {
+	ec2Session = func(context plugin.InventoryContext) ec2iface {
 		return fakeEC2
 	}
 	t.Run("with basic configuration", func(t *testing.T) {
