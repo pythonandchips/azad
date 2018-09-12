@@ -45,7 +45,8 @@ func assertExpressionForTask(
 	value string,
 ) {
 	expression := testExpression(name, variable)
-	evalContext, err := store.evalContextForTask(expression.Expr.Variables(), &connection)
+	additionalVariables := map[string]cty.Value{}
+	evalContext, err := store.evalContextForTask(expression.Expr.Variables(), &connection, additionalVariables)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

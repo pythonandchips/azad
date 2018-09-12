@@ -13,6 +13,7 @@ func unpackTask(block *hcl.Block) (steps.TaskStep, error) {
 		User:      content.Attributes["user"],
 		Condition: content.Attributes["condition"],
 		Debug:     content.Attributes["debug"],
+		WithItems: content.Attributes["with-items"],
 		Body:      body,
 	}, err
 }
@@ -23,6 +24,7 @@ func taskSchema() *hcl.BodySchema {
 			{Name: "user", Required: false},
 			{Name: "condition", Required: false},
 			{Name: "debug", Required: false},
+			{Name: "with-items", Required: false},
 		},
 	}
 }

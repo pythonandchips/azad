@@ -90,6 +90,7 @@ type TaskStep struct {
 	User      *hcl.Attribute
 	Condition *hcl.Attribute
 	Debug     *hcl.Attribute
+	WithItems *hcl.Attribute
 	Body      hcl.Body
 }
 

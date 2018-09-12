@@ -36,7 +36,7 @@ type serverStore interface {
 
 type taskStore interface {
 	evalStore
-	evalVariableForTask(*hcl.Attribute, *connection, []string) (cty.Value, error)
+	evalVariableForTask(*hcl.Attribute, *connection, map[string]cty.Value, []string) (cty.Value, error)
 	connections() connections
 	user() string
 	playbookPath() string

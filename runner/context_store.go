@@ -34,8 +34,13 @@ func newContextStore(applyTo []string, user, path string, baseStore store) (cont
 	return contextStore, nil
 }
 
-func (contextStore contextStore) evalVariableForTask(attr *hcl.Attribute, connection *connection, allowedTypes []string) (cty.Value, error) {
-	evalContext, err := contextStore.evalContextForTask(attr.Expr.Variables(), connection)
+func (contextStore contextStore) evalVariableForTask(
+	attr *hcl.Attribute,
+	connection *connection,
+	additionalVariables map[string]cty.Value,
+	allowedTypes []string,
+) (cty.Value, error) {
+	evalContext, err := contextStore.evalContextForTask(attr.Expr.Variables(), connection, additionalVariables)
 	if err != nil {
 		return cty.StringVal(""), err
 	}
@@ -46,8 +51,7 @@ func (contextStore contextStore) evalVariableForTask(attr *hcl.Attribute, connec
 	return val, nil
 }
 
-func (contextStore contextStore) evalContextForTask(requiredVariables []hcl.Traversal, connection *connection) (*hcl.EvalContext, error) {
-	variables := map[string]cty.Value{}
+func (contextStore contextStore) evalContextForTask(requiredVariables []hcl.Traversal, connection *connection, variables map[string]cty.Value) (*hcl.EvalContext, error) {
 	errors := &multierror.Error{}
 	var err error
 	for _, requiredVariable := range requiredVariables {
@@ -63,6 +67,8 @@ func (contextStore contextStore) evalContextForTask(requiredVariables []hcl.Trav
 			if err != nil {
 				errors = multierror.Append(errors, err)
 			}
+		case "item":
+			// special case do nothing any item will be initialize at the top
 		default:
 			variableName := strings.Join(variablePath, ".")
 			variable, err := connection.findVariable(variableName)
