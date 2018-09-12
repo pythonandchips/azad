@@ -72,11 +72,58 @@ func runTaskOnConnection(runContext runContext) error {
 		logger.Info("Skipping %s:%s on %s, condition failed", runContext.taskStep.PluginName(), runContext.taskStep.TaskName(), runContext.connection.conn.Address())
 		return nil
 	}
-	attrs, evalErr := runContext.taskAttributes()
-	if evalErr != nil {
-		return evalErr
+	if runContext.taskStep.WithItems == nil {
+		results, err := applyTask(runContext, map[string]cty.Value{})
+		if err != nil {
+			logger.Error("Failed %s:%s on %s, condition failed", runContext.taskStep.PluginName(), runContext.taskStep.TaskName(), runContext.connection.conn.Address())
+			return err
+		}
+		for key, value := range results {
+			runContext.connection.addTaskVariable(variable{
+				name:      runContext.taskStep.Label + "." + key,
+				valueType: "string",
+				value:     cty.StringVal(value),
+			})
+		}
+	} else {
+		items, err := runContext.taskStore.evalVariableForTask(runContext.taskStep.WithItems, runContext.connection, map[string]cty.Value{}, allowList)
+		if err != nil {
+			return err
+		}
+		resultSet := []cty.Value{}
+		for _, val := range items.AsValueSlice() {
+			additionalContext := map[string]cty.Value{
+				"item": val,
+			}
+			result, err := applyTask(runContext, additionalContext)
+			variableMap := map[string]cty.Value{}
+			for k, v := range result {
+				variableMap[k] = cty.StringVal(v)
+			}
+			resultSet = append(resultSet, cty.ObjectVal(variableMap))
+			if err != nil {
+				return err
+			}
+		}
+		runContext.connection.addTaskVariable(variable{
+			name:      runContext.taskStep.Label,
+			valueType: "array",
+			value:     cty.ListVal(resultSet),
+		})
 	}
 
+	logger.Info("Success %s:%s on %s", runContext.taskStep.PluginName(), runContext.taskStep.TaskName(), runContext.connection.conn.Address())
+	return nil
+}
+
+func applyTask(
+	runContext runContext,
+	additionalContext map[string]cty.Value,
+) (map[string]string, error) {
+	attrs, evalErr := runContext.taskAttributes(additionalContext)
+	if evalErr != nil {
+		return map[string]string{}, evalErr
+	}
 	context := plugin.NewContext(
 		attrs,
 		runContext.connection.conn,
@@ -103,23 +150,14 @@ func runTaskOnConnection(runContext runContext) error {
 		}
 	}
 	if err != nil {
-		logger.Error("Failed %s:%s on %s, condition failed", runContext.taskStep.PluginName(), runContext.taskStep.TaskName(), runContext.connection.conn.Address())
-		return err
+		return map[string]string{}, err
 	}
-	for key, value := range results {
-		runContext.connection.addTaskVariable(variable{
-			name:      runContext.taskStep.Label + "." + key,
-			valueType: "string",
-			value:     cty.StringVal(value),
-		})
-	}
-	logger.Info("Success %s:%s on %s", runContext.taskStep.PluginName(), runContext.taskStep.TaskName(), runContext.connection.conn.Address())
-	return nil
+	return results, nil
 }
 
 func (runContext runContext) shouldRun() (bool, error) {
 	if runContext.taskStep.Condition != nil {
-		val, evalErr := runContext.taskStore.evalVariableForTask(runContext.taskStep.Condition, runContext.connection, allowAll)
+		val, evalErr := runContext.taskStore.evalVariableForTask(runContext.taskStep.Condition, runContext.connection, map[string]cty.Value{}, allowAll)
 		if evalErr != nil {
 			return false, evalErr
 		}
@@ -130,7 +168,7 @@ func (runContext runContext) shouldRun() (bool, error) {
 
 func (runContext runContext) debug() bool {
 	if runContext.taskStep.Debug != nil {
-		val, evalErr := runContext.taskStore.evalVariableForTask(runContext.taskStep.Debug, runContext.connection, allowAll)
+		val, evalErr := runContext.taskStore.evalVariableForTask(runContext.taskStep.Debug, runContext.connection, map[string]cty.Value{}, allowAll)
 		if evalErr != nil {
 			return true
 		}
@@ -139,10 +177,10 @@ func (runContext runContext) debug() bool {
 	return false
 }
 
-func (runContext runContext) taskAttributes() (map[string]cty.Value, error) {
+func (runContext runContext) taskAttributes(additionalVariables map[string]cty.Value) (map[string]cty.Value, error) {
 	attrs := map[string]cty.Value{}
 	for name, attr := range runContext.content.Attributes {
-		val, evalErr := runContext.taskStore.evalVariableForTask(attr, runContext.connection, allowAll)
+		val, evalErr := runContext.taskStore.evalVariableForTask(attr, runContext.connection, additionalVariables, allowAll)
 		if evalErr != nil {
 			return attrs, evalErr
 		}

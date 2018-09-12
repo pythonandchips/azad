@@ -151,4 +151,52 @@ func TestHandleTask(t *testing.T) {
 			t.Errorf("expected error but got none")
 		}
 	})
+	t.Run("with multiple tasks when with-items has an array", func(t *testing.T) {
+		getTask = func(pluginName, taskName string) (plugin.Task, error) {
+			return plugin.Task{
+				Fields: []plugin.Field{
+					{Name: "string", Type: "string", Required: true},
+				},
+				Run: func(context plugin.Context) (map[string]string, error) {
+					command := plugin.Command{
+						Command: []string{
+							context.Get("string"),
+						},
+					}
+					err := context.Run(command)
+					return map[string]string{
+						"var": "val",
+					}, err
+				},
+			}, nil
+		}
+		conn := &conn.LoggerSSHConn{}
+		connection := connection{
+			conn: conn,
+		}
+		contextStore := contextStore{
+			store:              store,
+			contextUser:        "deploy",
+			contextPath:        "/home/user/azad/roles/ruby",
+			contextConnections: connections{&connection},
+		}
+		taskStep := steps.TaskStep{
+			Type:      "apt-get.install",
+			Label:     "install-erlang",
+			User:      testExpression("user", `"root"`),
+			WithItems: testExpression("with-items", `["item1", "item2"]`),
+			Body: &TestBody{
+				attributes: map[string]*hcl.Attribute{
+					"string": testExpression("string", `item`),
+				},
+			},
+		}
+		err := handleTask(taskStep, contextStore)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		assert.Equal(t, conn.Commands[0].User, "root")
+		assert.Equal(t, conn.Commands[0].Command[0], "item1")
+		assert.Equal(t, conn.Commands[1].Command[0], "item2")
+	})
 }

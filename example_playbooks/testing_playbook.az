@@ -31,4 +31,22 @@ role "test_role" {
   task "bash" "write-secrets" {
     command = "echo '${ var.access["access_key"] }' >> ./${ var.output_file }"
   }
+
+  task "bash" "multiple-array" {
+    command = "echo '${ item }' >> ./${ var.output_file }"
+    debug = true
+    with-items = [
+      "val1",
+      "val2",
+    ]
+  }
+
+  task "bash" "multiple-with-map" {
+    command = "echo '${ item.a } + ${ item.b }' >> ./${ var.output_file }"
+    debug = true
+    with-items = [
+      { "a" = "1", "b" = "2" },
+      { "a" = "1", "b" = "2" },
+    ]
+  }
 }
